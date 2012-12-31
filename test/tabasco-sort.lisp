@@ -295,7 +295,7 @@
 
 (defvar *unrolled-vector-sort-max-length* 8)
 
-(defun maybe-emit-unrolled-merge-sort (sequence predicate key env)
+(defun maybe-emit-unrolled-merge-sort (fun sequence predicate key env)
   (unless (policy (and (> speed space)
 		       (or (zerop space)
 			   (> speed compilation-speed)))
@@ -315,24 +315,28 @@
               (length ~S greater than ~S)~:@>"
 	 length *unrolled-vector-sort-max-length*))
       (if (<= length 1)
-	  sequence
-	  (alexandria:with-gensyms (seqvar fpvar) ; not once-only for the declare, i guess
+	  `(prog1 ,sequence ,predicate ,key) ; gotta evaluate those args
+	  (alexandria:with-gensyms (seqvar)
 	    ;; remember evaluation order - sequence, then predicate, then key.
 	    ;; (tabasco:inline-sort covers predicate and key)
-	    `(let* ((,seqvar ,sequence)
-		    (,fpvar (if (array-has-fill-pointer-p ,seqvar) (fill-pointer ,seqvar) 0)))
-	        (declare #+sbcl (optimize (sb-c::insert-array-bounds-checks 0))
-			 (type (mod ,(- most-positive-fixnum length)) ,fpvar))
-	       (tabasco:inline-sort ((alexandria:ensure-function ,predicate)
-				     ,@(when key `(:key (alexandria:ensure-function ,key))))
-		 ,@(loop for i below length collect
-			`(aref ,seqvar (+ ,fpvar ,i))))
+	    `(let* ((,seqvar ,sequence))
+	       (declare (type ,sequence-type ,seqvar))
+	       (if (array-has-fill-pointer-p ,seqvar)
+		   ;; only the elements up to the fill pointer should be sorted.
+		   ;; since that varies, just give up (at runtime...) if necessary
+		   (locally (declare (notinline ,fun)) ; don't expand recursively (kind of a big hammer...)
+		     (,fun ,seqvar ,predicate :key ,key))
+		   (locally (declare #+sbcl (optimize (sb-c::insert-array-bounds-checks 0)))
+		     (tabasco:inline-sort ((alexandria:ensure-function ,predicate)
+					   ,@(when key `(:key (alexandria:ensure-function ,key))))
+					  ,@(loop for i below length collect
+						 `(aref ,seqvar i)))))
 	       ,seqvar))))))
 
 (define-compiler-hint sort (sequence predicate &key key &environment env)
   "Unroll sort of short vectors." 
-  (maybe-emit-unrolled-merge-sort sequence predicate key env))
+  (maybe-emit-unrolled-merge-sort 'sort sequence predicate key env))
 
 (define-compiler-hint stable-sort (sequence predicate &key key &environment env)
   "Unroll sort of short vectors."
-  (maybe-emit-unrolled-merge-sort sequence predicate key env))
+  (maybe-emit-unrolled-merge-sort 'stable-sort sequence predicate key env))
