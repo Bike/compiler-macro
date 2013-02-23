@@ -19,17 +19,47 @@
 (define-condition simple-optimization-note (optimization-note simple-style-warning) ()
   (:documentation "An OPTIMIZATION-NOTE that is also a SIMPLE-CONDITION.  Initargs :FORMAT-CONTROL and :FORMAT-ARGS, and the readers SIMPLE-CONDITION-FORMAT-CONTROL and SIMPLE-CONDITION-FORMAT-ARGUMENTS, are available."))
 
+(defmacro check-type-eval (place typespec &optional type-string)
+  "As CHECK-TYPE, but TYPESPEC is evaluated."
+  ;; ripped from SBCL's check-type, and sans a single solitary quote for the semantic.  bleh.
+  (let ((value (gensym "VALUE"))
+	(_typespec (gensym "TYPESPEC"))
+	(_type-string (gensym "TYPE-STRING")))
+    `(do ((,value ,place ,place)
+	  (,_typespec ,typespec)
+	  (,_type-string ,type-string))
+	 ((typep ,value ,_typespec))
+       (setf ,place
+	     (restart-case
+		 (error 'simple-type-error
+			:datum ,value
+			:expected-type ,_typespec
+			:format-control "The value of ~S is ~S, which is not ~:[of type ~S~;~:*~A~]."
+			:format-arguments (list ',place ,value ,_type-string ,_typespec))
+	       (store-value (value)
+		 :report (lambda (stream) (format stream "Supply a new value for ~s." ',place))
+		 value))))))
+
 (defun coerce-to-condition (datum args default-type supertype)
   "This function implements the semantics of CL \"condition designators\".  It makes a condition, given a DATUM (which may be a symbol, format control, or condition), and ARGS (a list of arguments).  See CLHS 9.1.2.1 for more specifics.
 
-DEFAULT-TYPE is the type of the object that should be constructed when DATUM is a format control.  SUPERTYPE is a type that should be a supertype of the types of all conditions created by this function."
+DEFAULT-TYPE is the type of objects that should be constructed when DATUM is a format control.  SUPERTYPE is a type that should be a supertype of the types of all conditions returned by this function."
   (etypecase datum
-    (symbol (if (subtypep datum supertype)
-		(apply #'make-instance datum args)
-		(error "~s is not a subclass of ~s, and can't be used as one" datum supertype)))
+    ;; just a symbol, not a class name, says 9.1.2.1. why? who knows!
+    ;; and of course (deftype foo (...args...) ... (find-class 'some-kind-of-condition)) (error '(foo ...) ...) is right out.
+    (symbol
+     (if (subtypep datum supertype)
+	 (apply #'make-instance datum args)
+	 (error "~s is not a subclass of ~s, and can't be used as one" datum supertype)))
     ;; functions are also format controls.
     ((or function string) (make-condition default-type :format-control datum :format-arguments args))
-    (condition (assert (typep datum supertype)) (assert (null args)) datum)))
+    (condition
+     (check-type-eval datum supertype)
+     (unless (null args)
+       (cerror "Ignore the extra arguments."
+	       "Passed a condition to ~s, but passed arguments ~s as well."
+	       'coerce-to-condition args))
+     datum)))
 
 (defun decline-expansion (&optional (datum nil datum-p) &rest args)
   "This function should be called by compiler macroexpanders that reach a point such that they do not wish to expand.
