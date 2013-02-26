@@ -65,13 +65,17 @@ A bound designator is either a number, representing an inclusive bound, or a lis
       (ecase (first numtype)
 	((mod) 0)
 	((unsigned-byte) 0)
-	((signed-byte) (- (expt 2 (1- (second numtype)))))
+	((signed-byte) (let ((exp (second numtype)))
+			 (if (numberp exp)
+			     (- (expt 2 (1- exp)))
+			     '*)))
 	((float
 	  short-float single-float double-float long-float
 	  real rational integer)
 	 (second numtype))
 	((ratio) '*))
       (ecase numtype
+	((fixnum) most-negative-fixnum)
 	((unsigned-byte) 0)
 	((float
 	  short-float single-float double-float long-float
@@ -86,13 +90,17 @@ A bound designator is either a number, representing an inclusive bound, or a lis
 	;; could use exclusive bounds (i.e. lists) but ehhhhh
 	((mod) (1- (second numtype)))
 	((unsigned-byte) (1- (expt 2 (second numtype))))
-	((signed-byte) (1- (expt 2 (1- (second numtype)))))
+	((signed-byte) (let ((exp (second numtype)))
+			 (if (numberp exp)
+			     (1- (expt 2 (1- exp)))
+			     '*)))
 	((float
 	  short-float single-float double-float long-float
 	  real rational integer)
 	 (third numtype))
 	((ratio) '*))
       (ecase numtype
+	((fixnum) most-positive-fixnum)
 	((float
 	  short-float single-float double-float long-float
 	  real rational integer ratio signed-byte unsigned-byte)

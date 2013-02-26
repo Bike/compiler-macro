@@ -32,7 +32,7 @@
 	       (consp (cdr form))
 	       (consp (second form))
 	       (eql (first (second form)) 'function)
-	       (try-named (first (second form))))))
+	       (try-named (second (second form))))))
     (values form nil)))
 
 (defun compiler-macroexpand (form &optional env)

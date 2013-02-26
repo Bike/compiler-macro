@@ -5,10 +5,10 @@
 (in-package #:sandalphon.compiler-macro)
 
 (defparameter *kind-types*
-  '((cons-type . cons) (array-type . array) (sequence-type . sequence)
+  '((bottom-type . nil) ; has to be first, since (subtypep nil anything) => T
+    (cons-type . cons) (array-type . array) (sequence-type . sequence)
     (complex-type . complex) (numeric-type . number)
     (condition-type . condition) ; handled specially since no relation between CONDITION and CLASS is specified, etc
-    (bottom-type . nil) ; probably won't be useful but what the hey
     (class . class))
   "For some kinds, (kindp foo KIND) is roughly (subtypep foo TYPE).  This alist maps KINDs to TYPEs for such cases.")
 
@@ -29,7 +29,8 @@
 	      ((eql) 'eql-type) ; member-type?
 	      ((satisfies) 'satisfies-type)
 	      ((not) 'negation-type)
-	      (t (shared-name (first type)))))
+	      ;; use the whole type instead of just the car for e.g. (mod *)
+	      (t (shared-name type))))
       (symbol (or (shared-name type)
 		  (let ((class (find-class type nil)))
 		    ;; find-class works on defclass-defined and defstruct-defined classes.

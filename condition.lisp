@@ -45,7 +45,7 @@
 
 DEFAULT-TYPE is the type of objects that should be constructed when DATUM is a format control.  SUPERTYPE is a type that should be a supertype of the types of all conditions returned by this function."
   (etypecase datum
-    ;; just a symbol, not a class name, says 9.1.2.1. why? who knows!
+    ;; just a symbol, not a class, says 9.1.2.1. why? who knows!
     ;; and of course (deftype foo (...args...) ... (find-class 'some-kind-of-condition)) (error '(foo ...) ...) is right out.
     (symbol
      (if (subtypep datum supertype)

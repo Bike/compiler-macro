@@ -32,6 +32,7 @@
 	   #:cons-type-car-type #:cons-type-cdr-type) ; type-util
   (:export #:kind-of #:kindp #:kindcase #:ekindcase) ; kinds
   (:export #:cons-type #:array-type #:sequence-type ; kind specifiers (...)
+	   #:bottom-type #:subtype
 	   #:complex-type #:numeric-type #:condition-type
 	   #:intersection-type #:union-type #:member-type
 	   #:eql-type #:satisfies-type #:negation-type)

@@ -33,8 +33,7 @@ Supported options: :documentation"
 	 (doc (second doc-p)))
     ;; more options later, e.g. "method combinations"
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (when (and (compiler-macro-function ',name)
-		  (not (nth-value 1 (gethash ',name *compiler-hints*))))
+       (when (compiler-macro-function ',name)
 	 (warn 'compiler-macro-redefinition-warning
 	       :name ',name))
        (setf (gethash ',name *compiler-hints*) nil)
@@ -53,7 +52,7 @@ QUAL is an arbitrary object, which is compared (with CL:EQUAL) to establish uniq
 
 Hint functions have an implicit block with the usual name, can have declarations and docstrings, etc.
 
-Hint functions can signal conditions of type EXPANSION-DECLINATION in order to decline to expand without using the old-style \"return the original form\" protocol of compiler macros (though that is also supported).  The function DECLINE-EXPANSION is provided to simplify this."
+Hint functions can call DECLINE-EXPANSION in order to decline to expand immediately. This is intended as a replacement for the old-style \"return the original form\" protocol, though that is also supported."
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      ;; ew, double hash lookup
      (let ((existing? (compiler-hint ',name ',qual)))
@@ -66,17 +65,13 @@ Hint functions can signal conditions of type EXPANSION-DECLINATION in order to d
 (defun compiler-hint (name qual)
   "Retrieve the hint function for NAME, identified by QUAL compared via CL:EQUAL.
 
-A hint function is a function of two arguments, a form and an environment, and which returns a form with the same semantics as FORM but (hopefully) more efficient.
-
-A hint function signals a condition of type EXPANSION-DECLINATION to signal its caller that it cannot operate on the provided form.  The consequences of calling a hint function in an environment where such conditions are unhandled (i.e. do not transfer control out of the function) are undefined."
+A hint function is a function of two arguments, a form and an environment, and which returns a form with the same semantics as FORM but (hopefully) more efficient.  A hint function should be prepared to receive a form beginning with its name, or a form beginning with CL:FUNCALL."
   (cdr (assoc qual (gethash name *compiler-hints*))))
 
 (defun (setf compiler-hint) (new-value name qual)
   "Set the hint function for NAME, identified by QUAL compared via CL:EQUAL.
 
-A hint function is a function of two arguments, a form and an environment, and which returns a form with the same semantics as FORM but (hopefully) more efficient, or otherwise changed.
-
-A hint function should be prepared to receive a form beginning with its name, or a form beginning with CL:FUNCALL.  A hint function can expect that conditions of type EXPANSION-DECLINATION (possibly signaled by DECLINE-EXPANSION) will be handled."
+A hint function is a function of two arguments, a form and an environment, and which returns a form with the same semantics as FORM but (hopefully) more efficient, or otherwise changed."
   (check-type new-value function)
   ;; (setf (alexandria:assoc-value (gethash name *compiler-hints*) name :test #'equal) new-value)
   (let ((alist (gethash name *compiler-hints*)))

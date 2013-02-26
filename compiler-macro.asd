@@ -23,4 +23,7 @@
 					   "backend" "type-util" "package"))
 	       (:file "form-type" :depends-on ("misc" "backend" "infer" "type-util" "package"))
 	       (:file "hint" :depends-on ("backend" "condition" "package"))
-	       (:file "expander" :depends-on ("package"))))
+	       (:file "expander" :depends-on ("package")))
+  ;; cargo culted from bordeaux
+  :in-order-to ((asdf:test-op (asdf:load-op compiler-macro-test)))
+  :perform (asdf:test-op :after (op c) (asdf:oos 'asdf:test-op :compiler-macro-test)))

@@ -5,6 +5,7 @@
 (in-package #:sandalphon.compiler-macro-backend)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (pushnew :sandalphon.cltl2 *features*)
   ;; pain, pain, pain
   (shadowing-import '(ccl:function-information ccl:variable-information
 		      ccl:declaration-information ccl:parse-macro)
@@ -24,7 +25,7 @@
       '(function * *)))
 
 (defun policy-quality (quality &optional env)
-  (or (cdr (assoc quality (declaration-information 'optimize env)))
+  (or (second (assoc quality (declaration-information 'optimize env)))
       (error "Unknown policy quality ~s" quality)))
 
 (defmacro policy (expr &optional env)
