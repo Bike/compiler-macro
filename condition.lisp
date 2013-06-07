@@ -46,10 +46,11 @@
 DEFAULT-TYPE is the type of objects that should be constructed when DATUM is a format control.  SUPERTYPE is a type that should be a supertype of the types of all conditions returned by this function."
   (etypecase datum
     ;; just a symbol, not a class, says 9.1.2.1. why? who knows!
-    ;; and of course (deftype foo (...args...) ... (find-class 'some-kind-of-condition)) (error '(foo ...) ...) is right out.
+    ;; and of course (deftype foo (...args...) ... (find-class 'some-kind-of-condition))
+    ;; (error '(foo ...) ...) is right out.
     (symbol
      (if (subtypep datum supertype)
-	 (apply #'make-instance datum args)
+	 (apply #'make-condition datum args)
 	 (error "~s is not a subclass of ~s, and can't be used as one" datum supertype)))
     ;; functions are also format controls.
     ((or function string) (make-condition default-type :format-control datum :format-arguments args))
