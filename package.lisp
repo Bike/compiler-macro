@@ -1,13 +1,7 @@
 ;;;; package.lisp
 
-(defpackage #:sandalphon.compiler-macro-backend
-  (:use #:cl)
-  (:export #:variable-type #:function-type #:parse-macro #:parse-compiler-macro)
-  (:export #:policy #:policy-quality)
-  (:export #:typexpand #:typexpand-1))
-
 (defpackage #:sandalphon.compiler-macro
-  (:use #:cl #:sandalphon.compiler-macro-backend)
+  (:use #:cl #:introspect-environment)
   (:export #:policy #:policy-quality) ; reexport from backend
   (:export #:compiler-macro-redefinition-warning
 	   #:compiler-macro-redefinition-warning-name
