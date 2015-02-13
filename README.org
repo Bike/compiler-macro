@@ -45,9 +45,9 @@ Implementation-specific hooks are exported from the SANDALPHON.COMPILER-MACRO-BA
 
 * Documentation
 
-For more specific documentation, consult the docstrings; everything exported and most of that not exported should be documented.
++For more specific documentation, consult the docstrings; everything exported and most of that not exported should be documented.  If people get to using this library, a real manual will be constructed.+
 
-If people get to using this library, a real manual will be constructed.
+The manual is in [[doc/README.html]] . (without manual, the hurdle is super-high, isn't it?)
 
 * Examples
 
