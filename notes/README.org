@@ -1,0 +1,87 @@
+# -*- eval: (longlines-mode) -*-
+
+* condition
+
+purged from condition.lisp
+
+so, some things.  we don't want optimization notes to be ERRORs, of course, or even WARNINGs exactly.
+
+According to CLHS 3.2.5 Conditions of type ERROR might be signaled by the compiler in situations where the compilation cannot proceed without intervention.  warnings might be signaled in situations where the compiler can determine that the consequences are undefined or that a run-time error will be signaled.  The compiler is permitted to issue warnings about matters of programming style as conditions of type style-warning.
+
+COMPILE and COMPILE-FILE both return multiple values indicating whether any errors (conditions of type ERROR) or warnings (conditions of type (OR ERROR (AND WARNING (NOT STYLE-WARNING)))).
+
+Optimization notes obviously aren't run-time or undefinedness issues, and they're not really a programming style thing or "substandard" (to quote the entry on STYLE-WARNING).
+
+Actually, that page does mention "inefficient" code as possibly causing style warnings.  But still, I think there's a difference between e.g. leaving a variable unused, and a thousand notes about (* a a) not being as efficient as it would be if a was declare'd fixnum.
+
+I guess that should be enough for me to cut this short and just subclass style-warning.
+
+actually my above description of compile and compile-file's values is wrong: the first value is false if no WARNINGs or ERRORs were signaled, the third if no (OR ERROR (AND WARNING (NOT STYLE-WARNING)))s were signaled. so, style-warns will show up in the third value and all.  but i think that's ok, at least for now.  targeted suppresion mechanisms would be nice.
+
+guess what i'm not at all sure about expansion-abortion either. the functional mechanism makes sense (telling the macroexpander that this form will not expand) but i dunno about the conditions
+
+oh i had an idea.  use slots
+
+nope.  abortion gone for now
+
+rejiggering so that not all optimization notes require expansion to stop
+
+type hierarchy's getting messy.
+
+* generic
+
+My original half-baked design for this was rather more ambitious, and used CLOS and method combinations and things to allow really complicated optimization plans (like, say, "do some profiling, call this expander if it worked one way faster, call this other one if it worked another way faster").  Now that I've actually got something that works it would be nice to gradually work up to that.
+
+Of course it's also important to see if something complicated is even warranted.  Discriminating on derived types of args, though, that seems fairly fundamental (sbcl's deftransforms for example have it).
+
+with-expansion-declination and with-expansion-abortion should abstract things enough to make it possible to write such things on top of what already exists.
+
+It would also help remove the sucky qual mechanism.
+
+* lambda
+
+This system is basically based on SBCL's SB-C:DEFTRANSFORM, which is used for many (most?) of SBCL's important optimizations.  They're to-source transforms, but that's about where the similarity with compiler macros ends.  They run in the compiler's IR1 phase, and operate on the IR1 representation (nodes, lvars, &c., I'm not an SBCL hacker, so I don't know it that well).
+
+This lets them take advantage of more information than compiler macros can, such as dynamically inferred (constraint) type information.
+
+They still compute source, but unlike compiler macros what they actually return is a lambda expression (though the deftransform doesn't have to be written as such - the macro will wrap it up), to be used in place of a function in a call.  This has several advantages, like not having to worry about multiple evaluation (since the lambda expression handles it), spurious warnings (see the sbcl note in kind-types.lisp), and the possibility of replacement in something other than literal calls like compiler macros.  Like I think a transform could be triggered with (let ((foo #'something)) (apply foo ...)).
+
+I think overall computing a lambda expression is more sensible than just rewriting the whole call form, even if it's not then used in a later compilation phase.  E.g. we can imagine
+
+#+BEGIN_SRC lisp
+(define-compiler-hint remove-if (predicate sequence &rest keys)
+    "handle COMPLEMENT"
+  (unless #-magic (and (consp predicate) (eq (first predicate) 'complement) (= (length predicate 2)))
+	  #+magic (and (call? predicate) (eql (call-function-name predicate) 'complement))
+	  (decline-expansion))
+  `(apply #'remove-if-not #-magic ,(second predicate) #+magic ,(first (call-arguments predicate))
+	  sequence keys))
+#+END_SRC
+
+or something.  And this could be triggered with (apply #'remove-if (complement ...) ...), since the macro doesn't care about the rest args.
+
+so, i'd like to discourage dealing with forms as forms, to allow for the possibility of things like call-arguments.
+
+it would also be nice if the library could be plugged into things like deftransform.
+
+* types
+
+CMUCL introduced a type system with canonicalized type objects (structs), called ctypes.  SBCL and CCL use descendants of this system.  Type specifiers are converted into these objects with VALUES-TYPE-SPECIFIER, or just TYPE-SPECIFIER if a single-value type is expected, and these conversions are cached for efficiency.  A type object can be converted back into a specifier with SPECIFIER-TYPE, though it may not be the defining specifier due to canonicalization.  "methods" (not CLOS methods), as for type intersection or subtyping, can be defined on particular type object classes.
+
+This all makes the type reasoning SBCL is known for a good deal more organized.  It also allows CTYPE (and subtypes like ARRAY-TYPE, etc) to be themselves types, that can be dealt with with typecase &c.
+
+The only other implementation I've looked at (yet) is ABCL, which has nothing like this; TYPEP, SUBTYPEP and all just work directly on type specifiers.  This is a good deal simpler, but makes computing with types rather more of a pain.
+
+I've tried to write the interface to this library to discourage users from manipulating the results of FORM-TYPE etc. as type specifiers, and going through *KINDCASE/KINDP, and accessors like NUMERIC-TYPE-HIGH, instead.  The hope is that eventually the library will be altered to work with implementation-specific type objects (or with type specifiers as now for cases like ABCL), thus taking advantage of all the facilities for them in compilers.
+
+Eventually you'd may have functions like TYPE-INTERSECTION etc. for working with types.
+
+See also kind-types.lisp for some effort with working with types of type specifiers.  (Sucks.)
+
+Even more speculative stuff:
+
+The CL type system is really pretty powerful (you can even do some super-basic pattern matchy stuff with CONS &c., not that it can even handle regular languages), but it would be moreso if types were reified objects, that could even be user-defined.  (We already have that in the CLOS subset of the type system, metaclasses and all.)  You'd just need to have methods on typep and subtypep, really, and maybe on type-intersection and type-union optionally.  Of course this would make the system even more uncomputable weird for reasoning than it already was, but hey, we already have SATISFIES.
+
+Basically it's very based on gradual/optional/whatever types, so uncomputability isn't so bad, since we just have (for correctness)to infer things to be a supertype of their true type, and more specificity just means more efficiency, meaning say a particularly lazy implementation could say everything is T.
+
+In any case it's something I'd like to look into to see if it's remotely sane.
