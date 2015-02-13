@@ -1,0 +1,5 @@
+@findex abort-expansion
+@anchor{Function abort-expansion}
+@deffn {Function} {abort-expansion} &optional datum &rest args
+Like @code{decline-expansion}, but immediately aborts all expansion of the form (e.g. including in other hints), forcing the form to be used as-is.  This should be used, for example, when enough analysis is done to see that a form will be an error at runtime.
+@end deffn

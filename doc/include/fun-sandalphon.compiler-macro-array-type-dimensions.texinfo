@@ -1,0 +1,6 @@
+@findex array-type-dimensions
+@anchor{Function array-type-dimensions}
+@deffn {Function} {array-type-dimensions} array-type
+Return the known dimensions of a given array type.
+A dimensions designator is either a positive fixnum, representing a rank; a list of positive fixnums or the symbol @code{*}, representing dimension lengths; or the symbol @code{*}, representing no information.
+@end deffn

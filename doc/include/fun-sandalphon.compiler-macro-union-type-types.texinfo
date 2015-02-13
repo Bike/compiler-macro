@@ -1,0 +1,5 @@
+@findex union-type-types
+@anchor{Function union-type-types}
+@deffn {Function} {union-type-types} union-type
+Return the types the given union @code{(or) }type is composed of.
+@end deffn

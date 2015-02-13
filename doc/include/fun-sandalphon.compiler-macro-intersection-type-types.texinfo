@@ -1,0 +1,5 @@
+@findex intersection-type-types
+@anchor{Function intersection-type-types}
+@deffn {Function} {intersection-type-types} intersection-type
+Return the types the given intersection @code{(and) }type is composed of.
+@end deffn

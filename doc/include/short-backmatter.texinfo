@@ -1,0 +1,14 @@
+
+@node Function Index
+@comment  node-name,  next,  previous,  up
+@appendix Function Index
+
+@printindex fn
+
+
+@node Type Index
+@comment  node-name,  next,  previous,  up
+@appendix Type Index
+
+@printindex tp
+

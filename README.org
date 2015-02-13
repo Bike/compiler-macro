@@ -1,3 +1,5 @@
+# -*- eval: (longlines-mode) -*-
+
 This library is intended to make it possible to make compiler macros much more useful, by granting them access to lexical type information, making the protocol for declining expansion more convenient, and establishing some information for signaling optimization advice to programmers.  Some utilities to support this, especially for reasoning on types, are also included.
 
 All symbols are available from the =SANDALPHON.COMPILER-MACRO= package.

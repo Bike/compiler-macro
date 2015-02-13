@@ -1,0 +1,39 @@
+
+@node Concept Index
+@comment  node-name,  next,  previous,  up
+@appendix Concept Index
+
+@printindex cp
+
+
+@node Function Index
+@comment  node-name,  next,  previous,  up
+@appendix Function Index
+
+@printindex fn
+
+
+@node Variable Index
+@comment  node-name,  next,  previous,  up
+@appendix Variable Index
+
+@printindex vr
+
+
+@node Type Index
+@comment  node-name,  next,  previous,  up
+@appendix Type Index
+
+@printindex tp
+
+
+@node Colophon
+@comment  node-name,  next,  previous,  up
+@unnumbered Colophon
+
+This manual is maintained in Texinfo, and automatically translated
+into other forms (e.g. HTML or pdf). If you're @emph{reading} this
+manual in one of these non-Texinfo translated forms, that's fine, but
+if you want to @emph{modify} this manual, you are strongly advised to
+seek out a Texinfo version and modify that instead of modifying a
+translated version.

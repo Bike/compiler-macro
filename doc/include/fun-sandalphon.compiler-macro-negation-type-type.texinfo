@@ -1,0 +1,5 @@
+@findex negation-type-type
+@anchor{Function negation-type-type}
+@deffn {Function} {negation-type-type} negation-type
+Return the type the given negation @code{(not) }type is a negation of.
+@end deffn

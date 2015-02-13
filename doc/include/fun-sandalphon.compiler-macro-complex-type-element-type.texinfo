@@ -1,0 +1,5 @@
+@findex complex-type-element-type
+@anchor{Function complex-type-element-type}
+@deffn {Function} {complex-type-element-type} complex-type
+Given a complex type, return the (possibly unupgraded) element-type, or @code{*}.
+@end deffn

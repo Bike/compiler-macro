@@ -1,0 +1,7 @@
+@findex with-expansion-abortion
+@anchor{Macro with-expansion-abortion}
+@deffn {Macro} {with-expansion-abortion} &body body
+Within the dynamic extent of @code{body}, @code{abort-expansion} will immediately return @code{nil} from the @code{with-expansion-declination} form.
+
+This is intended for use in "advanced" utilities.
+@end deffn

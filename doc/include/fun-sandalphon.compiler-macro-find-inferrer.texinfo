@@ -1,0 +1,5 @@
+@findex find-inferrer
+@anchor{Function find-inferrer}
+@deffn {Function} {find-inferrer} name
+Return the type inference function for @code{name}.
+@end deffn

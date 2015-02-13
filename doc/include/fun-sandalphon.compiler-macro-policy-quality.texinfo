@@ -1,0 +1,5 @@
+@findex policy-quality
+@anchor{Function policy-quality}
+@deffn {Function} {policy-quality} quality &optional env
+Return the value of @code{quality}, an optimization quality (e.g. COMPILATION-SPEED) in @code{env}, if possible.
+@end deffn

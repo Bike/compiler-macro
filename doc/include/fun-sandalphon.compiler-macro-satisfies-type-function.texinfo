@@ -1,0 +1,5 @@
+@findex satisfies-type-function
+@anchor{Function satisfies-type-function}
+@deffn {Function} {satisfies-type-function} satisfies-type
+Given a @code{satisfies} type, return the name of the discriminating function it uses.
+@end deffn

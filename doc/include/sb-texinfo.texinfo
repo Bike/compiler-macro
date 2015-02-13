@@ -1,0 +1,97 @@
+
+@c MACHINE GENERATED FILE! Do not edit by hand!
+@c See SB-TEXINFO for details.
+
+@c @ifnottex
+@c @macro &allow-other-keys
+@c &allow-other-keys
+@c @end macro
+@c @macro &optional
+@c &optional
+@c @end macro
+@c @macro &rest
+@c &rest
+@c @end macro
+@c @macro &key
+@c &key
+@c @end macro
+@c @macro &body
+@c &body
+@c @end macro
+@c @end ifnottex
+
+@macro earmuffs{name}
+*\name\*
+@end macro
+@macro setf{name}
+(setf \name\)
+@end macro
+
+@iftex
+@tex
+\newif\ifdash
+\long\def\dashp#1{\expandafter\setnext#1-\dashphelper}
+\long\def\setnext#1-{\futurelet\next\dashphelper}
+\long\def\dashphelper#1\dashphelper{
+  \ifx\dashphelper\next\dashfalse\else\dashtrue\fi
+}
+\def\lw#1{\leavevmode\dashp{#1}\ifdash#1\else\hbox{#1}\fi}
+@end tex
+@end iftex
+
+@macro lw{word}
+@iftex
+@tex
+\\lw{\word\}%
+@end tex
+@end iftex
+@ifnottex
+\word\@c
+@end ifnottex
+@end macro
+
+@macro refvar{name}
+@ref{Variable \name\, @code{\name\}}
+@end macro
+
+@macro refmacro{name}
+@ref{Macro \name\, @code{\name\}}
+@end macro
+
+@macro reffun{name}
+@ref{Function \name\, @code{\name\}}
+@end macro
+@iftex
+@macro sandalphoncompilermacro{name}
+{@smallertt@phantom{concurrency:}@llap{sandalphon.compiler-macro:}}\name\
+@end macro
+@end iftex
+@ifinfo
+@macro sandalphoncompilermacro{name}
+\name\
+@end macro
+@end ifinfo
+@ifnottex
+@ifnotinfo
+@macro sandalphoncompilermacro{name}
+\name\ [sandalphon.compiler-macro]
+@end macro
+@end ifnotinfo
+@end ifnottex
+@iftex
+@macro nopkg{name}
+{@smallertt@phantom{concurrency:}}\name\
+@end macro
+@end iftex
+@ifinfo
+@macro nopkg{name}
+\name\
+@end macro
+@end ifinfo
+@ifnottex
+@ifnotinfo
+@macro nopkg{name}
+\name\ 
+@end macro
+@end ifnotinfo
+@end ifnottex

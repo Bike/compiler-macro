@@ -1,0 +1,20 @@
+@findex kindp
+@anchor{Function kindp}
+@deffn {Function} {kindp} type kind &optional environment
+Like @code{typep}, but for types themselves @code{-} @code{type} is a type, and @code{kind} is a kind designator.  "kinds" are like types of types; for example, we might say that (array @code{*} (3)) is of kind @code{array-type}.  Reasoning about types in this fashion is frequently useful in reasoning about programs.
+
+Possible kind designators are:
+
+@code{intersection-type:} Kind of @code{(and ...)}
+@code{union-type:} Kind of @code{(or ...)}
+@code{member-type}, @code{eql-type}, @code{satisfies-type} are as is obvious from their names.
+@code{negation-type:} Kind of @code{(not ...)}
+
+@code{cons-type}, @code{array-type}, @code{sequence-type}, @code{complex-type}, @code{numeric-type} are all as obvious, covering both atomic and compound (if this is applicable) types of their names.  @code{condition-type} is similar, and included because the @code{cl} standard doesn't prescribe any particular representation for the class of @code{condition}.
+
+@code{bottom-type} is used exclusively for @code{nil}, the type of no objects.
+
+Other kinds are already integrated with @code{clos}.  @code{e}.g., @code{structure-class} (the name, or the class itself) is the kind of structure types, and @code{class} is the kind of classes.
+
+Compound kind designators are available.  @code{eql}, @code{or}, @code{and}, and @code{not} are analogous to the same operators of types.  @code{subtype} can be used to designate the kind of all subtypes of a given type; that is, (kindp [t1] '(subtype [t2])) is the same as (subtypep [t1] [t2]).
+@end deffn
