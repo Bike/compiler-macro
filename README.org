@@ -12,13 +12,16 @@ Compiler macros are, however, not that useful on their own.  Most compiler macro
 
 It's also not possible to define multiple compiler macros on a function, so either a wrapper around =define-compiler-macro= etc. must be provided, or all possible optimizations must be crammed into one compiler macro.
 
-** FORM-TYPE / POLICY
-
-To support more involved optimization possibilities, this library includes a =FORM-TYPE= function for analyzing the possible type of a form, and =POLICY= and =POLICY-QUALITY= for optimizations conditional on programmer wants.  If possible, implementation-specific hooks are used to access declaration information in environments; otherwise policy is considered neutral, and all variables are considered of type =T=, etc.
+** FORM-TYPE 
+To support more involved optimization possibilities, this library includes a =FORM-TYPE= function for analyzing the possible type of a form.
 
 Minimal lexical type information extraction is also supported, even if declarations are not implementationally available.  This means, for example, that =(form-type '(the string foo))= will be STRING.  This mechanism is customizable.
 
 Utilities for working with types directly, e.g. extracting bounds from scalar numeric types, are provided.
+
+** Policy as Optimizations Conditional
+
+=POLICY= and =POLICY-QUALITY= for optimizations conditional on programmer wants.  If possible, implementation-specific hooks are used to access declaration information in environments; otherwise policy is considered neutral, and all variables are considered of type =T=, etc.
 
 ** NOTE-OPTIMIZATION-FAILURE
 
