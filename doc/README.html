@@ -136,57 +136,8 @@ declarations), this is about the best they can do.
 either a wrapper around <tt>define-compiler-macro</tt> etc. must be provided, or
 all possible optimizations must be crammed into one compiler macro.
 </p>
-<a name="FORM_002dTYPE"></a>
-<h3 class="section">1.1 FORM-TYPE</h3>
-<p>To support more involved optimization possibilities, this library includes
-a <tt>FORM-TYPE</tt> function for analyzing the possible type of a form.
-</p>
-<p>Minimal lexical type information extraction is also supported, even if
-declarations are not implementationally available.  This means, for
-example, that <tt>(form-type '(the string foo))</tt> will be STRING. 
-This mechanism is customizable.
-</p>
-<p>Utilities for working with types directly, e.g. extracting bounds from
-scalar numeric types, are provided.
-</p>
-<a name="Policy-as-Optimizations-Conditional"></a>
-<h3 class="section">1.2 Policy as Optimizations Conditional</h3>
-
-<p><tt>POLICY</tt> and <tt>POLICY-QUALITY</tt> for optimizations conditional on programmer
-wants.  If possible, implementation-specific hooks are used to access
-declaration information in environments; otherwise policy is considered
-neutral, and all variables are considered of type <tt>T</tt>, etc.
-</p>
-<a name="NOTE_002dOPTIMIZATION_002dFAILURE"></a>
-<h3 class="section">1.3 NOTE-OPTIMIZATION-FAILURE</h3>
-
-<p>Compiler maros can note optimization information to programmers (that is,
-at compile time) with <tt>NOTE-OPTIMIZATION-FAILURE</tt>.  A tree of condition
-types is supported so that these conditions may be subclassed,
-muffled, etc.
-</p>
-<a name="Hints_002c-Decline_002c-Abort"></a>
-<h3 class="section">1.4 Hints, Decline, Abort</h3>
-
-<p>A simple mechanism for defining multiple compiler macro functions, called
-&quot;hints&quot;, is included (<tt>DEFINE-COMPILER-HINT</tt>, <tt>DEFINE-COMPILER-HINTER</tt>,
-<tt>COMPILER-HINT</tt>).  Each hint has a &quot;qualifier&quot;, an unevaluated object
-compared with <tt>CL:EQUAL</tt>, for establishing uniqueness etc.  Hints can give
-up on expansion with the function <tt>DECLINE-EXPANSION</tt>, or abort expansion
-entirely (e.g. if a form is invalid) with <tt>ABORT-EXPANSION</tt>; with the same
-call they may provide optimization notes.
-</p>
-<p>More involved custom mechanisms may be defined, that still use
-<tt>DECLINE-EXPANSION</tt> etc., with the macros <tt>WITH-EXPANSION-DECLINATION</tt> and
-<tt>WITH-EXPANSION-ABORTION</tt>.  Something with similar syntax to CLOS is
-planned, if this library gets users.
-</p>
-<p>Finally, so that the results of optimizations can be seen easily,
-<tt>COMPILER-MACROEXPAND</tt> and <tt>COMPILER-MACROEXPAND-1</tt> are trivially defined. 
-They are analogous to <tt>CL:MACROEXPAND</tt> and <tt>CL:MACROEXPAND-1</tt>.
-</p>
 <a name="Implementation-support"></a>
-<h3 class="section">1.5 Implementation support</h3>
+<h3 class="section">1.1 Implementation support</h3>
 
 <p>Presently CCL and SBCL are supported.  Any other conforming CL
 implementation should work as well, but information will not be available
@@ -198,26 +149,17 @@ VARIABLE-TYPE, FUNCTION-TYPE, PARSE-MACRO (as in CLtL2),
 PARSE-COMPILER-MACRO (simple), POLICY, POLICY-QUALITY (for policy
 information), and TYPEXPAND/-1 (for type utilities).
 </p>
-<a name="Documentation"></a>
-<h3 class="section">1.6 Documentation</h3>
-
-<p>For more specific documentation, consult the docstrings; everything
-exported and most of that not exported should be documented.
-</p>
-<p>If people get to using this library, a real manual will be constructed.
-</p>
 <a name="Examples"></a>
-<h3 class="section">1.7 Examples</h3>
+<h3 class="section">1.2 Examples</h3>
 
 <p>An edit of pkhuong&rsquo;s TABASCO-SORT library for efficient inline sorts, and a
 &quot;port&quot; of a bit of Cyrus Harmon&rsquo;s opticl, are in test/
 </p>
 <a name="Notes"></a>
-<h3 class="section">1.8 Notes</h3>
+<h3 class="section">1.3 Notes</h3>
 
 <p>Miscellaneous notes are collected in notes/
 </p>
-
 <hr>
 <a name="API"></a>
 <div class="header">
@@ -227,101 +169,16 @@ Next: <a href="#Function-Index" accesskey="n" rel="next">Function Index</a>, Pre
 <a name="API-1"></a>
 <h2 class="chapter">2 API</h2>
 
-<a name="Conditions"></a>
-<h3 class="section">2.1 Conditions</h3>
-
-<a name="index-compiler_002dmacro_002dredefinition_002dwarning"></a>
-<a name="Condition-compiler_002dmacro_002dredefinition_002dwarning"></a><dl>
-<dt><a name="index-compiler_002dmacro_002dredefinition_002dwarning-1"></a>Condition: <strong>compiler-macro-redefinition-warning</strong></dt>
-<dd><p>Class precedence list: <code>compiler-macro-redefinition-warning, style-warning, warning, condition, t</code>
+<a name="FORM_002dTYPE"></a>
+<h3 class="section">2.1 FORM-TYPE</h3>
+<p>To support more involved optimization possibilities, this library includes
+a <tt>FORM-TYPE</tt> function for analyzing the possible type of a form.
 </p>
-<p>A style warning signaled when a compiler macro is redefined incompatibly.
-The redefined name is readable with <code>compiler-macro-redefinition-warning-name</code>.
-</p></dd></dl>
-<a name="index-optimization_002dnote"></a>
-<a name="Condition-optimization_002dnote"></a><dl>
-<dt><a name="index-optimization_002dnote-1"></a>Condition: <strong>optimization-note</strong></dt>
-<dd><p>Class precedence list: <code>optimization-note, style-warning, warning, condition, t</code>
+<p>Minimal lexical type information extraction is also supported, even if
+declarations are not implementationally available.  This means, for
+example, that <tt>(form-type '(the string foo))</tt> will be STRING. 
+This mechanism is customizable.
 </p>
-<p>An optimization note signaled by a compiler expander of some sort.  Signaling this condition should indicate that some information (perhaps about how to improve efficiency by rearranging things to let the expander expand) should be presented to the programmer during compilation.
-</p></dd></dl>
-<a name="index-simple_002doptimization_002dnote"></a>
-<a name="Condition-simple_002doptimization_002dnote"></a><dl>
-<dt><a name="index-simple_002doptimization_002dnote-1"></a>Condition: <strong>simple-optimization-note</strong></dt>
-<dd><p>Class precedence list: <code>simple-optimization-note, optimization-note, simple-style-warning, simple-warning, simple-condition, style-warning, warning, condition, t</code>
-</p>
-<p>An <code>optimization-note</code> that is also a <code>simple-condition</code>.  Initargs <code>:format-control</code> and <code>:format-args</code>, and the readers <code>simple-condition-format-control</code> and <code>simple-condition-format-arguments</code>, are available.
-</p></dd></dl>
-
-<a name="Functions"></a>
-<h3 class="section">2.2 Functions</h3>
-<a name="index-abort_002dexpansion"></a>
-<a name="Function-abort_002dexpansion"></a><dl>
-<dt><a name="index-abort_002dexpansion-1"></a>Function: <strong>abort-expansion</strong> <em>&amp;optional datum &amp;rest args</em></dt>
-<dd><p>Like <code>decline-expansion</code>, but immediately aborts all expansion of the form (e.g. including in other hints), forcing the form to be used as-is.  This should be used, for example, when enough analysis is done to see that a form will be an error at runtime.
-</p></dd></dl>
-<a name="index-array_002dtype_002ddimensions"></a>
-<a name="Function-array_002dtype_002ddimensions"></a><dl>
-<dt><a name="index-array_002dtype_002ddimensions-1"></a>Function: <strong>array-type-dimensions</strong> <em>array-type</em></dt>
-<dd><p>Return the known dimensions of a given array type.
-A dimensions designator is either a positive fixnum, representing a rank; a list of positive fixnums or the symbol <code>*</code>, representing dimension lengths; or the symbol <code>*</code>, representing no information.
-</p></dd></dl>
-<a name="index-array_002dtype_002delement_002dtype"></a>
-<a name="Function-array_002dtype_002delement_002dtype"></a><dl>
-<dt><a name="index-array_002dtype_002delement_002dtype-1"></a>Function: <strong>array-type-element-type</strong> <em>array-type</em></dt>
-<dd><p>Return the (possibly unupgraded) specialized element-type of the given array type, or <code>*</code>.
-</p></dd></dl>
-<a name="index-compiler_002dhint"></a>
-<a name="Function-compiler_002dhint"></a><dl>
-<dt><a name="index-compiler_002dhint-1"></a>Function: <strong>compiler-hint</strong> <em>name qual</em></dt>
-<dd><p>Retrieve the hint function for <code>name</code>, identified by <code>qual</code> compared via <code>cl:equal</code>.
-</p>
-<p>A hint function is a function of two arguments, a form and an environment, and which returns a form with the same semantics as <code>form</code> but (hopefully) more efficient.  A hint function should be prepared to receive a form beginning with its name, or a form beginning with <code>cl:funcall</code>.
-</p></dd></dl>
-<a name="index-compiler_002dmacroexpand_002d1"></a>
-<a name="Function-compiler_002dmacroexpand_002d1"></a><dl>
-<dt><a name="index-compiler_002dmacroexpand_002d1-1"></a>Function: <strong>compiler-macroexpand-1</strong> <em>form &amp;optional env</em></dt>
-<dd><p>As MACROEXPAND-1, but uses compiler macros rather than macros.  (as a consequence of this, forms like <code>(funcall (function foo) ...) </code>may be expanded with FOO&rsquo;s compiler macro.)
-</p></dd></dl>
-<a name="index-compiler_002dmacroexpand"></a>
-<a name="Function-compiler_002dmacroexpand"></a><dl>
-<dt><a name="index-compiler_002dmacroexpand-1"></a>Function: <strong>compiler-macroexpand</strong> <em>form &amp;optional env</em></dt>
-<dd><p>As <code>macroexpand</code>, but uses compiler macros rather than macros.  (as a consequence of this, forms like <code>(funcall (function foo) ...) </code>may be expanded with FOO&rsquo;s compiler macro.)
-</p></dd></dl>
-<a name="index-complex_002dtype_002delement_002dtype"></a>
-<a name="Function-complex_002dtype_002delement_002dtype"></a><dl>
-<dt><a name="index-complex_002dtype_002delement_002dtype-1"></a>Function: <strong>complex-type-element-type</strong> <em>complex-type</em></dt>
-<dd><p>Given a complex type, return the (possibly unupgraded) element-type, or <code>*</code>.
-</p></dd></dl>
-<a name="index-cons_002dtype_002dcar_002dtype"></a>
-<a name="Function-cons_002dtype_002dcar_002dtype"></a><dl>
-<dt><a name="index-cons_002dtype_002dcar_002dtype-1"></a>Function: <strong>cons-type-car-type</strong> <em>cons-type</em></dt>
-<dd><p>Given a <code>cons</code> type, return the type its <code>car</code> must be, or <code>*</code>.
-</p></dd></dl>
-<a name="index-cons_002dtype_002dcdr_002dtype"></a>
-<a name="Function-cons_002dtype_002dcdr_002dtype"></a><dl>
-<dt><a name="index-cons_002dtype_002dcdr_002dtype-1"></a>Function: <strong>cons-type-cdr-type</strong> <em>cons-type</em></dt>
-<dd><p>Given a <code>cons</code> type, return the type its <code>cdr</code> must be, or <code>*</code>.
-</p></dd></dl>
-<a name="index-decline_002dexpansion"></a>
-<a name="Function-decline_002dexpansion"></a><dl>
-<dt><a name="index-decline_002dexpansion-1"></a>Function: <strong>decline-expansion</strong> <em>&amp;optional datum &amp;rest args</em></dt>
-<dd><p>This function should be called by compiler macroexpanders that reach a point such that they do not wish to expand.
-</p>
-<p>If <code>datum</code> is provided, <code>note-optimization-failure</code> is called with <code>datum</code> and <code>args</code> to inform the programmer of the situation.
-</p>
-<p>Regardless of whether <code>datum</code> is provided, if called in the appropriate dynamic context, a non-local control transfer will immediately occur, halting expansion.
-</p></dd></dl>
-<a name="index-eql_002dtype_002dobject"></a>
-<a name="Function-eql_002dtype_002dobject"></a><dl>
-<dt><a name="index-eql_002dtype_002dobject-1"></a>Function: <strong>eql-type-object</strong> <em>eqltype</em></dt>
-<dd><p>Given an <code>eql</code> type, return the prototypical object objects of that type are <code>eql</code> to.
-</p></dd></dl>
-<a name="index-find_002dinferrer"></a>
-<a name="Function-find_002dinferrer"></a><dl>
-<dt><a name="index-find_002dinferrer-1"></a>Function: <strong>find-inferrer</strong> <em>name</em></dt>
-<dd><p>Return the type inference function for <code>name</code>.
-</p></dd></dl>
 <a name="index-form_002dtype"></a>
 <a name="Function-form_002dtype"></a><dl>
 <dt><a name="index-form_002dtype-1"></a>Function: <strong>form-type</strong> <em>form &amp;optional env</em></dt>
@@ -332,26 +189,46 @@ A dimensions designator is either a positive fixnum, representing a rank; a list
 <dt><a name="index-form_002dtypep-1"></a>Function: <strong>form-typep</strong> <em>form type &amp;optional env</em></dt>
 <dd><p>Returns true if <code>form</code> would evaluate to a value of type <code>type</code> in <code>env</code>, else false.
 </p></dd></dl>
-<a name="index-function_002dtype_002dprimary_002dvalue"></a>
-<a name="Function-function_002dtype_002dprimary_002dvalue"></a><dl>
-<dt><a name="index-function_002dtype_002dprimary_002dvalue-1"></a>Function: <strong>function-type-primary-value</strong> <em>function-type</em></dt>
-<dd><p>Given a function type, return the type of the function&rsquo;s primary return value.
+<a name="index-define_002dinferrer"></a>
+<a name="Macro-define_002dinferrer"></a><dl>
+<dt><a name="index-define_002dinferrer-1"></a>Macro: <strong>define-inferrer</strong> <em>name lambda-list &amp;body body</em></dt>
+<dd><p>Define a type inference function for <code>name</code>.
+In <code>form-type</code>, cons forms beginning with <code>name</code> will be
+passed to the function defined by <code>lambda-list</code> (which is a macro
+lambda list) and <code>body</code>; the type specifier returned will be used
+as the inferred type. e.g.
+</p>
+<div class="example">
+<pre class="example"> (define-inferrer the (value-type form)
+  (declare (ignore form))
+  (when (eql <code>'*</code> value-type)
+    (warn &quot;~s illegal in THE&quot; '*))
+  (value-type-primary value-type))
+</pre></div>
+
+<p>Note that in Lisp complex inference is inhibited by side effects and the mandated evaluation order.  Be conservative.
+</p>
+<p>Defined inferrers can be accessed with <code>find-inferrer</code>.
 </p></dd></dl>
-<a name="index-function_002dtype_002dreturn_002dtype"></a>
-<a name="Function-function_002dtype_002dreturn_002dtype"></a><dl>
-<dt><a name="index-function_002dtype_002dreturn_002dtype-1"></a>Function: <strong>function-type-return-type</strong> <em>function-type</em></dt>
-<dd><p>Given a function type, return the result type (which may be a values type) of that function type.
+<a name="index-find_002dinferrer"></a>
+<a name="Function-find_002dinferrer"></a><dl>
+<dt><a name="index-find_002dinferrer-1"></a>Function: <strong>find-inferrer</strong> <em>name</em></dt>
+<dd><p>Return the type inference function for <code>name</code>.
 </p></dd></dl>
-<a name="index-intersection_002dtype_002dtypes"></a>
-<a name="Function-intersection_002dtype_002dtypes"></a><dl>
-<dt><a name="index-intersection_002dtype_002dtypes-1"></a>Function: <strong>intersection-type-types</strong> <em>intersection-type</em></dt>
-<dd><p>Return the types the given intersection <code>(and) </code>type is composed of.
+<a name="index-_0028setf-find_002dinferrer_0029"></a>
+<a name="Function-_0028setf-find_002dinferrer_0029"></a><dl>
+<dt><a name="index-_0028setf-find_002dinferrer_0029-1"></a>Function: <strong>(setf find-inferrer)</strong> <em>new-value name</em></dt>
+<dd><p>Set the type inference function for <code>name</code>.  The function should be one suitable as a macroexpander, except that it should return a type specifier.  See <code>define-inferrer</code> for more information.
 </p></dd></dl>
-<a name="index-kind_002dof"></a>
-<a name="Function-kind_002dof"></a><dl>
-<dt><a name="index-kind_002dof-1"></a>Function: <strong>kind-of</strong> <em>type</em></dt>
-<dd><p>Return a kind designator appropriate for <code>type</code>.  See <code>kindp</code> for an explanation of kinds.
+<a name="index-form_002dtypecase"></a>
+<a name="Macro-form_002dtypecase"></a><dl>
+<dt><a name="index-form_002dtypecase-1"></a>Macro: <strong>form-typecase</strong> <em>form-form env-form &amp;body cases</em></dt>
+<dd><p>Executes the cdr of the first case such that FORM-FORM&rsquo;s type (derived through <code>form-type</code> with ENV-FORM) is a subtype of the car of that case.  If no case matches, <code>nil</code> is returned.
 </p></dd></dl>
+
+<a name="Kinds"></a>
+<h3 class="section">2.2 Kinds</h3>
+
 <a name="index-kindp"></a>
 <a name="Function-kindp"></a><dl>
 <dt><a name="index-kindp-1"></a>Function: <strong>kindp</strong> <em>type kind &amp;optional environment</em></dt>
@@ -372,6 +249,88 @@ A dimensions designator is either a positive fixnum, representing a rank; a list
 </p>
 <p>Compound kind designators are available.  <code>eql</code>, <code>or</code>, <code>and</code>, and <code>not</code> are analogous to the same operators of types.  <code>subtype</code> can be used to designate the kind of all subtypes of a given type; that is, (kindp [t1] &rsquo;(subtype [t2])) is the same as (subtypep [t1] [t2]).
 </p></dd></dl>
+<a name="index-kind_002dof"></a>
+<a name="Function-kind_002dof"></a><dl>
+<dt><a name="index-kind_002dof-1"></a>Function: <strong>kind-of</strong> <em>type</em></dt>
+<dd><p>Return a kind designator appropriate for <code>type</code>.  See <code>kindp</code> for an explanation of kinds.
+</p></dd></dl>
+<a name="index-kindcase"></a>
+<a name="Macro-kindcase"></a><dl>
+<dt><a name="index-kindcase-1"></a>Macro: <strong>kindcase</strong> <em>keyform &amp;body cases</em></dt>
+<dd><p>As <code>typecase</code>, but with <code>kindp</code> instead of <code>typep</code>.
+</p></dd></dl>
+<a name="index-ekindcase"></a>
+<a name="Macro-ekindcase"></a><dl>
+<dt><a name="index-ekindcase-1"></a>Macro: <strong>ekindcase</strong> <em>keyform &amp;body cases</em></dt>
+<dd><p>As <code>etypecase</code>, but with <code>kindp</code> instead of <code>typep</code>.
+</p></dd></dl>
+
+<a name="Type-Information-Extraction"></a>
+<h3 class="section">2.3 Type Information Extraction</h3>
+
+<p>Utilities for working with types directly, e.g. extracting bounds from
+scalar numeric types, are provided.
+</p>
+<a name="index-complex_002dtype_002delement_002dtype"></a>
+<a name="Function-complex_002dtype_002delement_002dtype"></a><dl>
+<dt><a name="index-complex_002dtype_002delement_002dtype-1"></a>Function: <strong>complex-type-element-type</strong> <em>complex-type</em></dt>
+<dd><p>Given a complex type, return the (possibly unupgraded) element-type, or <code>*</code>.
+</p></dd></dl>
+<a name="index-cons_002dtype_002dcar_002dtype"></a>
+<a name="Function-cons_002dtype_002dcar_002dtype"></a><dl>
+<dt><a name="index-cons_002dtype_002dcar_002dtype-1"></a>Function: <strong>cons-type-car-type</strong> <em>cons-type</em></dt>
+<dd><p>Given a <code>cons</code> type, return the type its <code>car</code> must be, or <code>*</code>.
+</p></dd></dl>
+<a name="index-cons_002dtype_002dcdr_002dtype"></a>
+<a name="Function-cons_002dtype_002dcdr_002dtype"></a><dl>
+<dt><a name="index-cons_002dtype_002dcdr_002dtype-1"></a>Function: <strong>cons-type-cdr-type</strong> <em>cons-type</em></dt>
+<dd><p>Given a <code>cons</code> type, return the type its <code>cdr</code> must be, or <code>*</code>.
+</p></dd></dl>
+
+<a name="index-array_002dtype_002ddimensions"></a>
+<a name="Function-array_002dtype_002ddimensions"></a><dl>
+<dt><a name="index-array_002dtype_002ddimensions-1"></a>Function: <strong>array-type-dimensions</strong> <em>array-type</em></dt>
+<dd><p>Return the known dimensions of a given array type.
+A dimensions designator is either a positive fixnum, representing a rank; a list of positive fixnums or the symbol <code>*</code>, representing dimension lengths; or the symbol <code>*</code>, representing no information.
+</p></dd></dl>
+<a name="index-array_002dtype_002delement_002dtype"></a>
+<a name="Function-array_002dtype_002delement_002dtype"></a><dl>
+<dt><a name="index-array_002dtype_002delement_002dtype-1"></a>Function: <strong>array-type-element-type</strong> <em>array-type</em></dt>
+<dd><p>Return the (possibly unupgraded) specialized element-type of the given array type, or <code>*</code>.
+</p></dd></dl>
+
+<a name="index-function_002dtype_002dprimary_002dvalue"></a>
+<a name="Function-function_002dtype_002dprimary_002dvalue"></a><dl>
+<dt><a name="index-function_002dtype_002dprimary_002dvalue-1"></a>Function: <strong>function-type-primary-value</strong> <em>function-type</em></dt>
+<dd><p>Given a function type, return the type of the function&rsquo;s primary return value.
+</p></dd></dl>
+<a name="index-function_002dtype_002dreturn_002dtype"></a>
+<a name="Function-function_002dtype_002dreturn_002dtype"></a><dl>
+<dt><a name="index-function_002dtype_002dreturn_002dtype-1"></a>Function: <strong>function-type-return-type</strong> <em>function-type</em></dt>
+<dd><p>Given a function type, return the result type (which may be a values type) of that function type.
+</p></dd></dl>
+<a name="index-satisfies_002dtype_002dfunction"></a>
+<a name="Function-satisfies_002dtype_002dfunction"></a><dl>
+<dt><a name="index-satisfies_002dtype_002dfunction-1"></a>Function: <strong>satisfies-type-function</strong> <em>satisfies-type</em></dt>
+<dd><p>Given a <code>satisfies</code> type, return the name of the discriminating function it uses.
+</p></dd></dl>
+
+<a name="index-union_002dtype_002dtypes"></a>
+<a name="Function-union_002dtype_002dtypes"></a><dl>
+<dt><a name="index-union_002dtype_002dtypes-1"></a>Function: <strong>union-type-types</strong> <em>union-type</em></dt>
+<dd><p>Return the types the given union <code>(or) </code>type is composed of.
+</p></dd></dl>
+<a name="index-values_002dtype_002dprimary"></a>
+<a name="Function-values_002dtype_002dprimary"></a><dl>
+<dt><a name="index-values_002dtype_002dprimary-1"></a>Function: <strong>values-type-primary</strong> <em>maybe-values-type</em></dt>
+<dd><p>Given a values type, return the type of the primary value.
+</p></dd></dl>
+<a name="index-intersection_002dtype_002dtypes"></a>
+<a name="Function-intersection_002dtype_002dtypes"></a><dl>
+<dt><a name="index-intersection_002dtype_002dtypes-1"></a>Function: <strong>intersection-type-types</strong> <em>intersection-type</em></dt>
+<dd><p>Return the types the given intersection <code>(and) </code>type is composed of.
+</p></dd></dl>
+
 <a name="index-member_002dtype_002dmembers"></a>
 <a name="Function-member_002dtype_002dmembers"></a><dl>
 <dt><a name="index-member_002dtype_002dmembers-1"></a>Function: <strong>member-type-members</strong> <em>member-type</em></dt>
@@ -382,13 +341,12 @@ A dimensions designator is either a positive fixnum, representing a rank; a list
 <dt><a name="index-negation_002dtype_002dtype-1"></a>Function: <strong>negation-type-type</strong> <em>negation-type</em></dt>
 <dd><p>Return the type the given negation <code>(not) </code>type is a negation of.
 </p></dd></dl>
-<a name="index-note_002doptimization_002dfailure"></a>
-<a name="Function-note_002doptimization_002dfailure"></a><dl>
-<dt><a name="index-note_002doptimization_002dfailure-1"></a>Function: <strong>note-optimization-failure</strong> <em>datum &amp;rest args</em></dt>
-<dd><p><code>datum</code> and <code>args</code> are treated as a condition designator (type <code>optimization-note</code>, default SIMPLE-OPTIMIZATION-NOTE).  <code>warn</code> is called with this designated condition.
-</p>
-<p>This is intended to be used to display missed optimization opportunities and related information to a programmer during compilation.
+<a name="index-eql_002dtype_002dobject"></a>
+<a name="Function-eql_002dtype_002dobject"></a><dl>
+<dt><a name="index-eql_002dtype_002dobject-1"></a>Function: <strong>eql-type-object</strong> <em>eqltype</em></dt>
+<dd><p>Given an <code>eql</code> type, return the prototypical object objects of that type are <code>eql</code> to.
 </p></dd></dl>
+
 <a name="index-numeric_002dtype_002dhigh"></a>
 <a name="Function-numeric_002dtype_002dhigh"></a><dl>
 <dt><a name="index-numeric_002dtype_002dhigh-1"></a>Function: <strong>numeric-type-high</strong> <em>numtype</em></dt>
@@ -401,41 +359,78 @@ A bound designator is either a number, representing an inclusive bound, or a lis
 <dd><p>Given a bounded numeric type (i.e. a scalar, not COMPLEX) return the known lower bound of that type.
 A bound designator is either a number, representing an inclusive bound, or a list of a number, representing an exclusive bound.
 </p></dd></dl>
+
+<a name="Policy-as-Optimizations-Conditional"></a>
+<h3 class="section">2.4 Policy as Optimizations Conditional</h3>
+
+<p><tt>POLICY</tt> and <tt>POLICY-QUALITY</tt> for optimizations conditional on programmer
+wants.  If possible, implementation-specific hooks are used to access
+declaration information in environments; otherwise policy is considered
+neutral, and all variables are considered of type <tt>T</tt>, etc.
+</p>
 <a name="index-policy_002dquality"></a>
 <a name="Function-policy_002dquality"></a><dl>
 <dt><a name="index-policy_002dquality-1"></a>Function: <strong>policy-quality</strong> <em>quality &amp;optional env</em></dt>
 <dd><p>Return the value of <code>quality</code>, an optimization quality (e.g. COMPILATION-SPEED) in <code>env</code>, if possible.
 </p></dd></dl>
-<a name="index-satisfies_002dtype_002dfunction"></a>
-<a name="Function-satisfies_002dtype_002dfunction"></a><dl>
-<dt><a name="index-satisfies_002dtype_002dfunction-1"></a>Function: <strong>satisfies-type-function</strong> <em>satisfies-type</em></dt>
-<dd><p>Given a <code>satisfies</code> type, return the name of the discriminating function it uses.
-</p></dd></dl>
-<a name="index-_0028setf-compiler_002dhint_0029"></a>
-<a name="Function-_0028setf-compiler_002dhint_0029"></a><dl>
-<dt><a name="index-_0028setf-compiler_002dhint_0029-1"></a>Function: <strong>(setf compiler-hint)</strong> <em>new-value name qual</em></dt>
-<dd><p>Set the hint function for <code>name</code>, identified by <code>qual</code> compared via <code>cl:equal</code>.
+<a name="index-policy"></a>
+<a name="Macro-policy"></a><dl>
+<dt><a name="index-policy-1"></a>Macro: <strong>policy</strong> <em>expr &amp;optional env</em></dt>
+<dd><p>Evaluate <code>expr</code> in an environment in which all optimization qualities (e.g. COMPILATION-SPEED) refer to their known values in <code>env</code> if possible.
 </p>
-<p>A hint function is a function of two arguments, a form and an environment, and which returns a form with the same semantics as <code>form</code> but (hopefully) more efficient, or otherwise changed.
-</p></dd></dl>
-<a name="index-_0028setf-find_002dinferrer_0029"></a>
-<a name="Function-_0028setf-find_002dinferrer_0029"></a><dl>
-<dt><a name="index-_0028setf-find_002dinferrer_0029-1"></a>Function: <strong>(setf find-inferrer)</strong> <em>new-value name</em></dt>
-<dd><p>Set the type inference function for <code>name</code>.  The function should be one suitable as a macroexpander, except that it should return a type specifier.  See <code>define-inferrer</code> for more information.
-</p></dd></dl>
-<a name="index-union_002dtype_002dtypes"></a>
-<a name="Function-union_002dtype_002dtypes"></a><dl>
-<dt><a name="index-union_002dtype_002dtypes-1"></a>Function: <strong>union-type-types</strong> <em>union-type</em></dt>
-<dd><p>Return the types the given union <code>(or) </code>type is composed of.
-</p></dd></dl>
-<a name="index-values_002dtype_002dprimary"></a>
-<a name="Function-values_002dtype_002dprimary"></a><dl>
-<dt><a name="index-values_002dtype_002dprimary-1"></a>Function: <strong>values-type-primary</strong> <em>maybe-values-type</em></dt>
-<dd><p>Given a values type, return the type of the primary value.
+<p>For instance, (locally (optimize (speed 3) (space 0)) (policy <code>(&gt; speed space) </code>env)) will evaluate to true (if supported).
 </p></dd></dl>
 
-<a name="Macros"></a>
-<h3 class="section">2.3 Macros</h3>
+<a name="NOTE_002dOPTIMIZATION_002dFAILURE"></a>
+<h3 class="section">2.5 NOTE-OPTIMIZATION-FAILURE</h3>
+
+<p>Compiler maros can note optimization information to programmers (that is,
+at compile time) with <tt>NOTE-OPTIMIZATION-FAILURE</tt>.  A tree of condition
+types is supported so that these conditions may be subclassed,
+muffled, etc.
+</p>
+<a name="index-note_002doptimization_002dfailure"></a>
+<a name="Function-note_002doptimization_002dfailure"></a><dl>
+<dt><a name="index-note_002doptimization_002dfailure-1"></a>Function: <strong>note-optimization-failure</strong> <em>datum &amp;rest args</em></dt>
+<dd><p><code>datum</code> and <code>args</code> are treated as a condition designator (type <code>optimization-note</code>, default SIMPLE-OPTIMIZATION-NOTE).  <code>warn</code> is called with this designated condition.
+</p>
+<p>This is intended to be used to display missed optimization opportunities and related information to a programmer during compilation.
+</p></dd></dl>
+<a name="index-optimization_002dnote"></a>
+<a name="Condition-optimization_002dnote"></a><dl>
+<dt><a name="index-optimization_002dnote-1"></a>Condition: <strong>optimization-note</strong></dt>
+<dd><p>Class precedence list: <code>optimization-note, style-warning, warning, condition, t</code>
+</p>
+<p>An optimization note signaled by a compiler expander of some sort.  Signaling this condition should indicate that some information (perhaps about how to improve efficiency by rearranging things to let the expander expand) should be presented to the programmer during compilation.
+</p></dd></dl>
+<a name="index-simple_002doptimization_002dnote"></a>
+<a name="Condition-simple_002doptimization_002dnote"></a><dl>
+<dt><a name="index-simple_002doptimization_002dnote-1"></a>Condition: <strong>simple-optimization-note</strong></dt>
+<dd><p>Class precedence list: <code>simple-optimization-note, optimization-note, simple-style-warning, simple-warning, simple-condition, style-warning, warning, condition, t</code>
+</p>
+<p>An <code>optimization-note</code> that is also a <code>simple-condition</code>.  Initargs <code>:format-control</code> and <code>:format-args</code>, and the readers <code>simple-condition-format-control</code> and <code>simple-condition-format-arguments</code>, are available.
+</p></dd></dl>
+
+<a name="Hints_002c-Decline_002c-Abort"></a>
+<h3 class="section">2.6 Hints, Decline, Abort</h3>
+
+<p>A simple mechanism for defining multiple compiler macro functions, called
+&quot;hints&quot;, is included (<tt>DEFINE-COMPILER-HINT</tt>, <tt>DEFINE-COMPILER-HINTER</tt>,
+<tt>COMPILER-HINT</tt>).  Each hint has a &quot;qualifier&quot;, an unevaluated object
+compared with <tt>CL:EQUAL</tt>, for establishing uniqueness etc.  Hints can give
+up on expansion with the function <tt>DECLINE-EXPANSION</tt>, or abort expansion
+entirely (e.g. if a form is invalid) with <tt>ABORT-EXPANSION</tt>; with the same
+call they may provide optimization notes.
+</p>
+<p>More involved custom mechanisms may be defined, that still use
+<tt>DECLINE-EXPANSION</tt> etc., with the macros <tt>WITH-EXPANSION-DECLINATION</tt> and
+<tt>WITH-EXPANSION-ABORTION</tt>.  Something with similar syntax to CLOS is
+planned, if this library gets users.
+</p>
+<p>Finally, so that the results of optimizations can be seen easily,
+<tt>COMPILER-MACROEXPAND</tt> and <tt>COMPILER-MACROEXPAND-1</tt> are trivially defined. 
+They are analogous to <tt>CL:MACROEXPAND</tt> and <tt>CL:MACROEXPAND-1</tt>.
+</p>
 <a name="index-define_002dcompiler_002dhint"></a>
 <a name="Macro-define_002dcompiler_002dhint"></a><dl>
 <dt><a name="index-define_002dcompiler_002dhint-1"></a>Macro: <strong>define-compiler-hint</strong> <em>name lambda-list qual &amp;body body</em></dt>
@@ -456,43 +451,33 @@ A bound designator is either a number, representing an inclusive bound, or a lis
 </p>
 <p>Supported options: :documentation
 </p></dd></dl>
-<a name="index-define_002dinferrer"></a>
-<a name="Macro-define_002dinferrer"></a><dl>
-<dt><a name="index-define_002dinferrer-1"></a>Macro: <strong>define-inferrer</strong> <em>name lambda-list &amp;body body</em></dt>
-<dd><p>Define a type inference function for <code>name</code>.  In <code>form-type</code>, cons forms beginning with <code>name</code> will be passed to the function defined by <code>lambda-list</code> (which is a macro lambda list) and <code>body</code>; the type specifier returned will be used as the inferred type.
+<a name="index-compiler_002dhint"></a>
+<a name="Function-compiler_002dhint"></a><dl>
+<dt><a name="index-compiler_002dhint-1"></a>Function: <strong>compiler-hint</strong> <em>name qual</em></dt>
+<dd><p>Retrieve the hint function for <code>name</code>, identified by <code>qual</code> compared via <code>cl:equal</code>.
 </p>
-<p><code>e</code>.g.
- (define-inferrer the (value-type form)
-  (declare (ignore form))
-  (when (eql <code>'*</code> value-type)
-    (warn &quot;~s illegal in THE&quot; &rsquo;*))
-  (value-type-primary value-type))
+<p>A hint function is a function of two arguments, a form and an environment, and which returns a form with the same semantics as <code>form</code> but (hopefully) more efficient.  A hint function should be prepared to receive a form beginning with its name, or a form beginning with <code>cl:funcall</code>.
+</p></dd></dl>
+<a name="index-_0028setf-compiler_002dhint_0029"></a>
+<a name="Function-_0028setf-compiler_002dhint_0029"></a><dl>
+<dt><a name="index-_0028setf-compiler_002dhint_0029-1"></a>Function: <strong>(setf compiler-hint)</strong> <em>new-value name qual</em></dt>
+<dd><p>Set the hint function for <code>name</code>, identified by <code>qual</code> compared via <code>cl:equal</code>.
 </p>
-<p>Note that in Lisp complex inference is inhibited by side effects and the mandated evaluation order.  Be conservative.
+<p>A hint function is a function of two arguments, a form and an environment, and which returns a form with the same semantics as <code>form</code> but (hopefully) more efficient, or otherwise changed.
+</p></dd></dl>
+<a name="index-abort_002dexpansion"></a>
+<a name="Function-abort_002dexpansion"></a><dl>
+<dt><a name="index-abort_002dexpansion-1"></a>Function: <strong>abort-expansion</strong> <em>&amp;optional datum &amp;rest args</em></dt>
+<dd><p>Like <code>decline-expansion</code>, but immediately aborts all expansion of the form (e.g. including in other hints), forcing the form to be used as-is.  This should be used, for example, when enough analysis is done to see that a form will be an error at runtime.
+</p></dd></dl>
+<a name="index-decline_002dexpansion"></a>
+<a name="Function-decline_002dexpansion"></a><dl>
+<dt><a name="index-decline_002dexpansion-1"></a>Function: <strong>decline-expansion</strong> <em>&amp;optional datum &amp;rest args</em></dt>
+<dd><p>This function should be called by compiler macroexpanders that reach a point such that they do not wish to expand.
 </p>
-<p>Defined inferrers can be accessed with <code>find-inferrer</code>.
-</p></dd></dl>
-<a name="index-ekindcase"></a>
-<a name="Macro-ekindcase"></a><dl>
-<dt><a name="index-ekindcase-1"></a>Macro: <strong>ekindcase</strong> <em>keyform &amp;body cases</em></dt>
-<dd><p>As <code>etypecase</code>, but with <code>kindp</code> instead of <code>typep</code>.
-</p></dd></dl>
-<a name="index-form_002dtypecase"></a>
-<a name="Macro-form_002dtypecase"></a><dl>
-<dt><a name="index-form_002dtypecase-1"></a>Macro: <strong>form-typecase</strong> <em>form-form env-form &amp;body cases</em></dt>
-<dd><p>Executes the cdr of the first case such that FORM-FORM&rsquo;s type (derived through <code>form-type</code> with ENV-FORM) is a subtype of the car of that case.  If no case matches, <code>nil</code> is returned.
-</p></dd></dl>
-<a name="index-kindcase"></a>
-<a name="Macro-kindcase"></a><dl>
-<dt><a name="index-kindcase-1"></a>Macro: <strong>kindcase</strong> <em>keyform &amp;body cases</em></dt>
-<dd><p>As <code>typecase</code>, but with <code>kindp</code> instead of <code>typep</code>.
-</p></dd></dl>
-<a name="index-policy"></a>
-<a name="Macro-policy"></a><dl>
-<dt><a name="index-policy-1"></a>Macro: <strong>policy</strong> <em>expr &amp;optional env</em></dt>
-<dd><p>Evaluate <code>expr</code> in an environment in which all optimization qualities (e.g. COMPILATION-SPEED) refer to their known values in <code>env</code> if possible.
+<p>If <code>datum</code> is provided, <code>note-optimization-failure</code> is called with <code>datum</code> and <code>args</code> to inform the programmer of the situation.
 </p>
-<p>For instance, (locally (optimize (speed 3) (space 0)) (policy <code>(&gt; speed space) </code>env)) will evaluate to true (if supported).
+<p>Regardless of whether <code>datum</code> is provided, if called in the appropriate dynamic context, a non-local control transfer will immediately occur, halting expansion.
 </p></dd></dl>
 <a name="index-with_002dexpansion_002dabortion"></a>
 <a name="Macro-with_002dexpansion_002dabortion"></a><dl>
@@ -507,6 +492,28 @@ A bound designator is either a number, representing an inclusive bound, or a lis
 <dd><p>Within the dynamic extent of <code>body</code>, <code>decline-expansion</code> will immediately return <code>nil</code> from the <code>with-expansion-declination</code> form.
 </p>
 <p>This is intended for use in &quot;advanced&quot; utilities.
+</p></dd></dl>
+
+<a name="Misc-API"></a>
+<h3 class="section">2.7 Misc API</h3>
+
+<a name="index-compiler_002dmacro_002dredefinition_002dwarning"></a>
+<a name="Condition-compiler_002dmacro_002dredefinition_002dwarning"></a><dl>
+<dt><a name="index-compiler_002dmacro_002dredefinition_002dwarning-1"></a>Condition: <strong>compiler-macro-redefinition-warning</strong></dt>
+<dd><p>Class precedence list: <code>compiler-macro-redefinition-warning, style-warning, warning, condition, t</code>
+</p>
+<p>A style warning signaled when a compiler macro is redefined incompatibly.
+The redefined name is readable with <code>compiler-macro-redefinition-warning-name</code>.
+</p></dd></dl>
+<a name="index-compiler_002dmacroexpand_002d1"></a>
+<a name="Function-compiler_002dmacroexpand_002d1"></a><dl>
+<dt><a name="index-compiler_002dmacroexpand_002d1-1"></a>Function: <strong>compiler-macroexpand-1</strong> <em>form &amp;optional env</em></dt>
+<dd><p>As MACROEXPAND-1, but uses compiler macros rather than macros.  (as a consequence of this, forms like <code>(funcall (function foo) ...) </code>may be expanded with FOO&rsquo;s compiler macro.)
+</p></dd></dl>
+<a name="index-compiler_002dmacroexpand"></a>
+<a name="Function-compiler_002dmacroexpand"></a><dl>
+<dt><a name="index-compiler_002dmacroexpand-1"></a>Function: <strong>compiler-macroexpand</strong> <em>form &amp;optional env</em></dt>
+<dd><p>As <code>macroexpand</code>, but uses compiler macros rather than macros.  (as a consequence of this, forms like <code>(funcall (function foo) ...) </code>may be expanded with FOO&rsquo;s compiler macro.)
 </p></dd></dl>
 
 

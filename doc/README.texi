@@ -69,6 +69,30 @@ It's also not possible to define multiple compiler macros on a function, so
 either a wrapper around @verb{~define-compiler-macro~} etc. must be provided, or
 all possible optimizations must be crammed into one compiler macro.
 
+@section Implementation support
+
+Presently CCL and SBCL are supported.  Any other conforming CL
+implementation should work as well, but information will not be available
+from the environment.  Hope you like THE.
+
+Implementation-specific hooks are exported from the
+SANDALPHON.COMPILER-MACRO-BACKEND package.  Functions needed are
+VARIABLE-TYPE, FUNCTION-TYPE, PARSE-MACRO (as in CLtL2),
+PARSE-COMPILER-MACRO (simple), POLICY, POLICY-QUALITY (for policy
+information), and TYPEXPAND/-1 (for type utilities).
+
+@section Examples
+
+An edit of pkhuong's TABASCO-SORT library for efficient inline sorts, and a
+"port" of a bit of Cyrus Harmon's opticl, are in test/
+
+@section Notes
+
+Miscellaneous notes are collected in notes/
+
+@node API
+@chapter API
+
 @section FORM-TYPE
 To support more involved optimization possibilities, this library includes
 a @verb{~FORM-TYPE~} function for analyzing the possible type of a form.
@@ -78,8 +102,46 @@ declarations are not implementationally available.  This means, for
 example, that @verb{~(form-type '(the string foo))~} will be STRING. 
 This mechanism is customizable.
 
+@include include/fun-sandalphon.compiler-macro-form-type.texinfo
+@include include/fun-sandalphon.compiler-macro-form-typep.texinfo
+@include include/macro-sandalphon.compiler-macro-define-inferrer.texinfo
+@include include/fun-sandalphon.compiler-macro-find-inferrer.texinfo
+@include include/fun-sandalphon.compiler-macro-setf-find-inferrer.texinfo
+@include include/macro-sandalphon.compiler-macro-form-typecase.texinfo
+
+@section Kinds
+
+@include include/fun-sandalphon.compiler-macro-kindp.texinfo
+@include include/fun-sandalphon.compiler-macro-kind-of.texinfo
+@include include/macro-sandalphon.compiler-macro-kindcase.texinfo
+@include include/macro-sandalphon.compiler-macro-ekindcase.texinfo
+
+@section Type Information Extraction
+
 Utilities for working with types directly, e.g. extracting bounds from
 scalar numeric types, are provided.
+
+@include include/fun-sandalphon.compiler-macro-complex-type-element-type.texinfo
+@include include/fun-sandalphon.compiler-macro-cons-type-car-type.texinfo
+@include include/fun-sandalphon.compiler-macro-cons-type-cdr-type.texinfo
+
+@include include/fun-sandalphon.compiler-macro-array-type-dimensions.texinfo
+@include include/fun-sandalphon.compiler-macro-array-type-element-type.texinfo
+
+@include include/fun-sandalphon.compiler-macro-function-type-primary-value.texinfo
+@include include/fun-sandalphon.compiler-macro-function-type-return-type.texinfo
+@include include/fun-sandalphon.compiler-macro-satisfies-type-function.texinfo
+
+@include include/fun-sandalphon.compiler-macro-union-type-types.texinfo
+@include include/fun-sandalphon.compiler-macro-values-type-primary.texinfo
+@include include/fun-sandalphon.compiler-macro-intersection-type-types.texinfo
+
+@include include/fun-sandalphon.compiler-macro-member-type-members.texinfo
+@include include/fun-sandalphon.compiler-macro-negation-type-type.texinfo
+@include include/fun-sandalphon.compiler-macro-eql-type-object.texinfo
+
+@include include/fun-sandalphon.compiler-macro-numeric-type-high.texinfo
+@include include/fun-sandalphon.compiler-macro-numeric-type-low.texinfo
 
 @section Policy as Optimizations Conditional
 
@@ -88,12 +150,19 @@ wants.  If possible, implementation-specific hooks are used to access
 declaration information in environments; otherwise policy is considered
 neutral, and all variables are considered of type @verb{~T~}, etc.
 
+@include include/fun-sandalphon.compiler-macro-policy-quality.texinfo
+@include include/macro-sandalphon.compiler-macro-policy.texinfo
+
 @section NOTE-OPTIMIZATION-FAILURE
 
 Compiler maros can note optimization information to programmers (that is,
 at compile time) with @verb{~NOTE-OPTIMIZATION-FAILURE~}.  A tree of condition
 types is supported so that these conditions may be subclassed,
 muffled, etc.
+
+@include include/fun-sandalphon.compiler-macro-note-optimization-failure.texinfo
+@include include/condition-sandalphon.compiler-macro-optimization-note.texinfo
+@include include/condition-sandalphon.compiler-macro-simple-optimization-note.texinfo
 
 @section Hints, Decline, Abort
 
@@ -114,87 +183,20 @@ Finally, so that the results of optimizations can be seen easily,
 @verb{~COMPILER-MACROEXPAND~} and @verb{~COMPILER-MACROEXPAND-1~} are trivially defined. 
 They are analogous to @verb{~CL:MACROEXPAND~} and @verb{~CL:MACROEXPAND-1~}.
 
-@section Implementation support
-
-Presently CCL and SBCL are supported.  Any other conforming CL
-implementation should work as well, but information will not be available
-from the environment.  Hope you like THE.
-
-Implementation-specific hooks are exported from the
-SANDALPHON.COMPILER-MACRO-BACKEND package.  Functions needed are
-VARIABLE-TYPE, FUNCTION-TYPE, PARSE-MACRO (as in CLtL2),
-PARSE-COMPILER-MACRO (simple), POLICY, POLICY-QUALITY (for policy
-information), and TYPEXPAND/-1 (for type utilities).
-
-@section Documentation
-
-For more specific documentation, consult the docstrings; everything
-exported and most of that not exported should be documented.
-
-If people get to using this library, a real manual will be constructed.
-
-@section Examples
-
-An edit of pkhuong's TABASCO-SORT library for efficient inline sorts, and a
-"port" of a bit of Cyrus Harmon's opticl, are in test/
-
-@section Notes
-
-Miscellaneous notes are collected in notes/
-
-@c Emacs 24.3.1 (Org mode 8.2.5h)
-
-@node API
-@chapter API
-
-@section Conditions
-
-@include include/condition-sandalphon.compiler-macro-compiler-macro-redefinition-warning.texinfo
-@include include/condition-sandalphon.compiler-macro-optimization-note.texinfo
-@include include/condition-sandalphon.compiler-macro-simple-optimization-note.texinfo
-
-@section Functions
-@include include/fun-sandalphon.compiler-macro-abort-expansion.texinfo
-@include include/fun-sandalphon.compiler-macro-array-type-dimensions.texinfo
-@include include/fun-sandalphon.compiler-macro-array-type-element-type.texinfo
-@include include/fun-sandalphon.compiler-macro-compiler-hint.texinfo
-@include include/fun-sandalphon.compiler-macro-compiler-macroexpand-1.texinfo
-@include include/fun-sandalphon.compiler-macro-compiler-macroexpand.texinfo
-@include include/fun-sandalphon.compiler-macro-complex-type-element-type.texinfo
-@include include/fun-sandalphon.compiler-macro-cons-type-car-type.texinfo
-@include include/fun-sandalphon.compiler-macro-cons-type-cdr-type.texinfo
-@include include/fun-sandalphon.compiler-macro-decline-expansion.texinfo
-@include include/fun-sandalphon.compiler-macro-eql-type-object.texinfo
-@include include/fun-sandalphon.compiler-macro-find-inferrer.texinfo
-@include include/fun-sandalphon.compiler-macro-form-type.texinfo
-@include include/fun-sandalphon.compiler-macro-form-typep.texinfo
-@include include/fun-sandalphon.compiler-macro-function-type-primary-value.texinfo
-@include include/fun-sandalphon.compiler-macro-function-type-return-type.texinfo
-@include include/fun-sandalphon.compiler-macro-intersection-type-types.texinfo
-@include include/fun-sandalphon.compiler-macro-kind-of.texinfo
-@include include/fun-sandalphon.compiler-macro-kindp.texinfo
-@include include/fun-sandalphon.compiler-macro-member-type-members.texinfo
-@include include/fun-sandalphon.compiler-macro-negation-type-type.texinfo
-@include include/fun-sandalphon.compiler-macro-note-optimization-failure.texinfo
-@include include/fun-sandalphon.compiler-macro-numeric-type-high.texinfo
-@include include/fun-sandalphon.compiler-macro-numeric-type-low.texinfo
-@include include/fun-sandalphon.compiler-macro-policy-quality.texinfo
-@include include/fun-sandalphon.compiler-macro-satisfies-type-function.texinfo
-@include include/fun-sandalphon.compiler-macro-setf-compiler-hint.texinfo
-@include include/fun-sandalphon.compiler-macro-setf-find-inferrer.texinfo
-@include include/fun-sandalphon.compiler-macro-union-type-types.texinfo
-@include include/fun-sandalphon.compiler-macro-values-type-primary.texinfo
-
-@section Macros
 @include include/macro-sandalphon.compiler-macro-define-compiler-hint.texinfo
 @include include/macro-sandalphon.compiler-macro-define-compiler-hinter.texinfo
-@include include/macro-sandalphon.compiler-macro-define-inferrer.texinfo
-@include include/macro-sandalphon.compiler-macro-ekindcase.texinfo
-@include include/macro-sandalphon.compiler-macro-form-typecase.texinfo
-@include include/macro-sandalphon.compiler-macro-kindcase.texinfo
-@include include/macro-sandalphon.compiler-macro-policy.texinfo
+@include include/fun-sandalphon.compiler-macro-compiler-hint.texinfo
+@include include/fun-sandalphon.compiler-macro-setf-compiler-hint.texinfo
+@include include/fun-sandalphon.compiler-macro-abort-expansion.texinfo
+@include include/fun-sandalphon.compiler-macro-decline-expansion.texinfo
 @include include/macro-sandalphon.compiler-macro-with-expansion-abortion.texinfo
 @include include/macro-sandalphon.compiler-macro-with-expansion-declination.texinfo
+
+@section Misc API
+
+@include include/condition-sandalphon.compiler-macro-compiler-macro-redefinition-warning.texinfo
+@include include/fun-sandalphon.compiler-macro-compiler-macroexpand-1.texinfo
+@include include/fun-sandalphon.compiler-macro-compiler-macroexpand.texinfo
 
 @include include/short-backmatter.texinfo
 @bye

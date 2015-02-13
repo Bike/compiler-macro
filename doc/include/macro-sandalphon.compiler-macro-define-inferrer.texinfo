@@ -1,14 +1,19 @@
 @findex define-inferrer
 @anchor{Macro define-inferrer}
 @deffn {Macro} {define-inferrer} name lambda-list &body body
-Define a type inference function for @code{name}.  In @code{form-type}, cons forms beginning with @code{name} will be passed to the function defined by @code{lambda-list} (which is a macro lambda list) and @code{body}; the type specifier returned will be used as the inferred type.
+Define a type inference function for @code{name}.
+In @code{form-type}, cons forms beginning with @code{name} will be
+passed to the function defined by @code{lambda-list} (which is a macro
+lambda list) and @code{body}; the type specifier returned will be used
+as the inferred type. e.g.
 
-@code{e}.g.
+@example
  (define-inferrer the (value-type form)
   (declare (ignore form))
   (when (eql @code{'*} value-type)
     (warn "~s illegal in THE" '*))
   (value-type-primary value-type))
+@end example
 
 Note that in Lisp complex inference is inhibited by side effects and the mandated evaluation order.  Be conservative.
 
