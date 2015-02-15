@@ -1,0 +1,5 @@
+@findex kindcase
+@anchor{Macro kindcase}
+@deffn {Macro} {kindcase} keyform &body cases
+As @code{typecase}, but with @code{kindp} instead of @code{typep}.
+@end deffn

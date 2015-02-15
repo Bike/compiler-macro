@@ -1,0 +1,5 @@
+@findex eql-type-object
+@anchor{Function eql-type-object}
+@deffn {Function} {eql-type-object} eqltype
+Given an @code{eql} type, return the prototypical object objects of that type are @code{eql} to.
+@end deffn

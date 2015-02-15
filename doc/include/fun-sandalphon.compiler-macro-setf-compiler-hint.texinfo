@@ -1,0 +1,7 @@
+@findex @setf{compiler-hint}
+@anchor{Function (setf compiler-hint)}
+@deffn {Function} {@setf{compiler-hint}} new-value name qual
+Set the hint function for @code{name}, identified by @code{qual} compared via @code{cl:equal}.
+
+A hint function is a function of two arguments, a form and an environment, and which returns a form with the same semantics as @code{form} but (hopefully) more efficient, or otherwise changed.
+@end deffn

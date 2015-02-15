@@ -1,0 +1,7 @@
+@findex policy
+@anchor{Macro policy}
+@deffn {Macro} {policy} expr &optional env
+Evaluate @code{expr} in an environment in which all optimization qualities (e.g. COMPILATION-SPEED) refer to their known values in @code{env} if possible.
+
+For instance, (locally (optimize (speed 3) (space 0)) (policy @code{(> speed space) }env)) will evaluate to true (if supported).
+@end deffn

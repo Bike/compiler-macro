@@ -1,0 +1,5 @@
+@findex form-typep
+@anchor{Function form-typep}
+@deffn {Function} {form-typep} form type &optional env
+Returns true if @code{form} would evaluate to a value of type @code{type} in @code{env}, else false.
+@end deffn

@@ -1,0 +1,5 @@
+@findex compiler-macroexpand-1
+@anchor{Function compiler-macroexpand-1}
+@deffn {Function} {compiler-macroexpand-1} form &optional env
+As MACROEXPAND-1, but uses compiler macros rather than macros.  (as a consequence of this, forms like @code{(funcall (function foo) ...) }may be expanded with FOO's compiler macro.)
+@end deffn

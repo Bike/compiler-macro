@@ -1,0 +1,752 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 5.2, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>COMPILER-MACRO</title>
+
+<meta name="description" content="COMPILER-MACRO">
+<meta name="keywords" content="COMPILER-MACRO">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="#Top" rel="start" title="Top">
+<link href="#Function-Index" rel="index" title="Function Index">
+<link href="dir.html#Top" rel="up" title="(dir)">
+<style type="text/css">
+<!--
+  
+
+a.summary-letter {text-decoration: none}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.indentedblock {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smallindentedblock {margin-left: 3.2em; font-size: smaller}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style:oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nocodebreak {white-space:nowrap}
+span.nolinebreak {white-space:nowrap}
+span.roman {font-family:serif; font-weight:normal}
+span.sansserif {font-family:sans-serif; font-weight:normal}
+ul.no-bullet {list-style: none}
+.node { display:none; visibility:hidden; height: 0px; }
+  .menu { display:none; visibility:hidden; height: 0px; }
+  .appendix { background-color:#a4bbff; padding: 0.2em; }
+  .chapter { background-color:#a4bbff; padding: 0.2em; }
+  .section { background-color:#a4bbff; padding: 0.2em; }
+  .settitle { background-color:#a4bbff; }
+  .contents { border: 2px solid black;
+              margin: 1cm 1cm 1cm 1cm;
+              padding-left: 3mm; }
+  .lisp { padding: 0; margin: 0em; }
+  body { padding: 2em 8em; font-family: sans-serif; }
+  h1 { padding: 1em; text-align: center; }
+  li { margin: 1em; }
+
+
+-->
+</style>
+
+
+</head>
+
+<body lang="en" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
+<h1 class="settitle" align="center">COMPILER-MACRO</h1>
+
+
+
+
+
+
+
+
+
+
+<a name="Top"></a>
+<div class="header">
+<p>
+Next: <a href="#Motivation" accesskey="n" rel="next">Motivation</a>, Up: <a href="dir.html#Top" accesskey="u" rel="up">(dir)</a> &nbsp; [<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<a name="Introduction"></a>
+<h1 class="top">Introduction</h1>
+
+<p>This library is intended to make it possible to make compiler macros much
+more useful, by granting them access to lexical type information, making
+the protocol for declining expansion more convenient, and establishing some
+information for signaling optimization advice to programmers. 
+Some utilities to support this, especially for reasoning on types, are
+also included.
+</p>
+<p>All symbols are available from the <tt>SANDALPHON.COMPILER-MACRO</tt> package.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="#Motivation" accesskey="1">Motivation</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#API" accesskey="2">API</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Function-Index" accesskey="3">Function Index</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Type-Index" accesskey="4">Type Index</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<hr>
+<a name="Motivation"></a>
+<div class="header">
+<p>
+Next: <a href="#API" accesskey="n" rel="next">API</a>, Previous: <a href="#Top" accesskey="p" rel="prev">Top</a>, Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<a name="Motivation-1"></a>
+<h2 class="chapter">1 Motivation</h2>
+
+<p>Writing macros for syntactic extensions is an integral part of Lisp
+systems, and is strongly supported by Lisp&rsquo;s homoiconicity.  However, at
+least in Common Lisp, another kind of code transform is not so utilized:
+those for optimization, i.e. source-to-source transforms.  There&rsquo;s no
+particular reason for these to be exclusively the domain of an opaque
+compiler system, any more than syntax is.
+</p>
+<p>To support this, Common Lisp has compiler macros (<tt>define-compiler-macro</tt>,
+<tt>compiler-macro-function</tt>), which are intended as optimization advice to
+compilers.  Practically speaking compiler macros are like macros, but can
+be defined on symbols that exist as functions or macros (so as to separate
+the core logic for such functions from optimization advice on them), and
+can decline to expand (if an optimization is not applicable).
+</p>
+<p>Compiler macros are, however, not that useful on their own.  Most compiler
+macros rely on picking out literal arguments to functions (via <tt>constantp</tt>)
+for a sort of partial inlining.  As there are no standard facilities for
+complicated program analysis or, importantly, accessing information that
+may be being used by the compiler anyway (e.g. <tt>OPTIMIZE</tt> information, type
+declarations), this is about the best they can do.
+</p>
+<p>It&rsquo;s also not possible to define multiple compiler macros on a function, so
+either a wrapper around <tt>define-compiler-macro</tt> etc. must be provided, or
+all possible optimizations must be crammed into one compiler macro.
+</p>
+<a name="Implementation-support"></a>
+<h3 class="section">1.1 Implementation support</h3>
+
+<p>Presently CCL and SBCL are supported.  Any other conforming CL
+implementation should work as well, but information will not be available
+from the environment.  Hope you like THE.
+</p>
+<p>Implementation-specific hooks are exported from the
+SANDALPHON.COMPILER-MACRO-BACKEND package.  Functions needed are
+VARIABLE-TYPE, FUNCTION-TYPE, PARSE-MACRO (as in CLtL2),
+PARSE-COMPILER-MACRO (simple), POLICY, POLICY-QUALITY (for policy
+information), and TYPEXPAND/-1 (for type utilities).
+</p>
+<a name="Examples"></a>
+<h3 class="section">1.2 Examples</h3>
+
+<p>An edit of pkhuong&rsquo;s TABASCO-SORT library for efficient inline sorts, and a
+&quot;port&quot; of a bit of Cyrus Harmon&rsquo;s opticl, are in test/
+</p>
+<a name="Notes"></a>
+<h3 class="section">1.3 Notes</h3>
+
+<p>Miscellaneous notes are collected in notes/
+</p>
+<hr>
+<a name="API"></a>
+<div class="header">
+<p>
+Next: <a href="#Function-Index" accesskey="n" rel="next">Function Index</a>, Previous: <a href="#Motivation" accesskey="p" rel="prev">Motivation</a>, Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<a name="API-1"></a>
+<h2 class="chapter">2 API</h2>
+
+<a name="FORM_002dTYPE"></a>
+<h3 class="section">2.1 FORM-TYPE</h3>
+<p>To support more involved optimization possibilities, this library includes
+a <tt>FORM-TYPE</tt> function for analyzing the possible type of a form.
+</p>
+<p>Minimal lexical type information extraction is also supported, even if
+declarations are not implementationally available.  This means, for
+example, that <tt>(form-type '(the string foo))</tt> will be STRING. 
+This mechanism is customizable.
+</p>
+<a name="index-form_002dtype"></a>
+<a name="Function-form_002dtype"></a><dl>
+<dt><a name="index-form_002dtype-1"></a>Function: <strong>form-type</strong> <em>form &amp;optional env</em></dt>
+<dd><p>Return a type such that (typep [form] [type] [env]) would return true, if [form] was evaluated in [env].
+</p></dd></dl>
+<a name="index-form_002dtypep"></a>
+<a name="Function-form_002dtypep"></a><dl>
+<dt><a name="index-form_002dtypep-1"></a>Function: <strong>form-typep</strong> <em>form type &amp;optional env</em></dt>
+<dd><p>Returns true if <code>form</code> would evaluate to a value of type <code>type</code> in <code>env</code>, else false.
+</p></dd></dl>
+<a name="index-define_002dinferrer"></a>
+<a name="Macro-define_002dinferrer"></a><dl>
+<dt><a name="index-define_002dinferrer-1"></a>Macro: <strong>define-inferrer</strong> <em>name lambda-list &amp;body body</em></dt>
+<dd><p>Define a type inference function for <code>name</code>.
+In <code>form-type</code>, cons forms beginning with <code>name</code> will be
+passed to the function defined by <code>lambda-list</code> (which is a macro
+lambda list) and <code>body</code>; the type specifier returned will be used
+as the inferred type. e.g.
+</p>
+<div class="example">
+<pre class="example"> (define-inferrer the (value-type form)
+  (declare (ignore form))
+  (when (eql <code>'*</code> value-type)
+    (warn &quot;~s illegal in THE&quot; '*))
+  (value-type-primary value-type))
+</pre></div>
+
+<p>Note that in Lisp complex inference is inhibited by side effects and the mandated evaluation order.  Be conservative.
+</p>
+<p>Defined inferrers can be accessed with <code>find-inferrer</code>.
+</p></dd></dl>
+<a name="index-find_002dinferrer"></a>
+<a name="Function-find_002dinferrer"></a><dl>
+<dt><a name="index-find_002dinferrer-1"></a>Function: <strong>find-inferrer</strong> <em>name</em></dt>
+<dd><p>Return the type inference function for <code>name</code>.
+</p></dd></dl>
+<a name="index-_0028setf-find_002dinferrer_0029"></a>
+<a name="Function-_0028setf-find_002dinferrer_0029"></a><dl>
+<dt><a name="index-_0028setf-find_002dinferrer_0029-1"></a>Function: <strong>(setf find-inferrer)</strong> <em>new-value name</em></dt>
+<dd><p>Set the type inference function for <code>name</code>.  The function should be one suitable as a macroexpander, except that it should return a type specifier.  See <code>define-inferrer</code> for more information.
+</p></dd></dl>
+<a name="index-form_002dtypecase"></a>
+<a name="Macro-form_002dtypecase"></a><dl>
+<dt><a name="index-form_002dtypecase-1"></a>Macro: <strong>form-typecase</strong> <em>form-form env-form &amp;body cases</em></dt>
+<dd><p>Executes the cdr of the first case such that FORM-FORM&rsquo;s type (derived through <code>form-type</code> with ENV-FORM) is a subtype of the car of that case.  If no case matches, <code>nil</code> is returned.
+</p></dd></dl>
+
+<a name="Kinds"></a>
+<h3 class="section">2.2 Kinds</h3>
+
+<a name="index-kindp"></a>
+<a name="Function-kindp"></a><dl>
+<dt><a name="index-kindp-1"></a>Function: <strong>kindp</strong> <em>type kind &amp;optional environment</em></dt>
+<dd><p>Like <code>typep</code>, but for types themselves <code>-</code> <code>type</code> is a type, and <code>kind</code> is a kind designator.  &quot;kinds&quot; are like types of types; for example, we might say that (array <code>*</code> (3)) is of kind <code>array-type</code>.  Reasoning about types in this fashion is frequently useful in reasoning about programs.
+</p>
+<p>Possible kind designators are:
+</p>
+<p><code>intersection-type:</code> Kind of <code>(and ...)</code>
+<code>union-type:</code> Kind of <code>(or ...)</code>
+<code>member-type</code>, <code>eql-type</code>, <code>satisfies-type</code> are as is obvious from their names.
+<code>negation-type:</code> Kind of <code>(not ...)</code>
+</p>
+<p><code>cons-type</code>, <code>array-type</code>, <code>sequence-type</code>, <code>complex-type</code>, <code>numeric-type</code> are all as obvious, covering both atomic and compound (if this is applicable) types of their names.  <code>condition-type</code> is similar, and included because the <code>cl</code> standard doesn&rsquo;t prescribe any particular representation for the class of <code>condition</code>.
+</p>
+<p><code>bottom-type</code> is used exclusively for <code>nil</code>, the type of no objects.
+</p>
+<p>Other kinds are already integrated with <code>clos</code>.  <code>e</code>.g., <code>structure-class</code> (the name, or the class itself) is the kind of structure types, and <code>class</code> is the kind of classes.
+</p>
+<p>Compound kind designators are available.  <code>eql</code>, <code>or</code>, <code>and</code>, and <code>not</code> are analogous to the same operators of types.  <code>subtype</code> can be used to designate the kind of all subtypes of a given type; that is, (kindp [t1] &rsquo;(subtype [t2])) is the same as (subtypep [t1] [t2]).
+</p></dd></dl>
+<a name="index-kind_002dof"></a>
+<a name="Function-kind_002dof"></a><dl>
+<dt><a name="index-kind_002dof-1"></a>Function: <strong>kind-of</strong> <em>type</em></dt>
+<dd><p>Return a kind designator appropriate for <code>type</code>.  See <code>kindp</code> for an explanation of kinds.
+</p></dd></dl>
+<a name="index-kindcase"></a>
+<a name="Macro-kindcase"></a><dl>
+<dt><a name="index-kindcase-1"></a>Macro: <strong>kindcase</strong> <em>keyform &amp;body cases</em></dt>
+<dd><p>As <code>typecase</code>, but with <code>kindp</code> instead of <code>typep</code>.
+</p></dd></dl>
+<a name="index-ekindcase"></a>
+<a name="Macro-ekindcase"></a><dl>
+<dt><a name="index-ekindcase-1"></a>Macro: <strong>ekindcase</strong> <em>keyform &amp;body cases</em></dt>
+<dd><p>As <code>etypecase</code>, but with <code>kindp</code> instead of <code>typep</code>.
+</p></dd></dl>
+
+<a name="Type-Information-Extraction"></a>
+<h3 class="section">2.3 Type Information Extraction</h3>
+
+<p>Utilities for working with types directly, e.g. extracting bounds from
+scalar numeric types, are provided.
+</p>
+<a name="index-complex_002dtype_002delement_002dtype"></a>
+<a name="Function-complex_002dtype_002delement_002dtype"></a><dl>
+<dt><a name="index-complex_002dtype_002delement_002dtype-1"></a>Function: <strong>complex-type-element-type</strong> <em>complex-type</em></dt>
+<dd><p>Given a complex type, return the (possibly unupgraded) element-type, or <code>*</code>.
+</p></dd></dl>
+<a name="index-cons_002dtype_002dcar_002dtype"></a>
+<a name="Function-cons_002dtype_002dcar_002dtype"></a><dl>
+<dt><a name="index-cons_002dtype_002dcar_002dtype-1"></a>Function: <strong>cons-type-car-type</strong> <em>cons-type</em></dt>
+<dd><p>Given a <code>cons</code> type, return the type its <code>car</code> must be, or <code>*</code>.
+</p></dd></dl>
+<a name="index-cons_002dtype_002dcdr_002dtype"></a>
+<a name="Function-cons_002dtype_002dcdr_002dtype"></a><dl>
+<dt><a name="index-cons_002dtype_002dcdr_002dtype-1"></a>Function: <strong>cons-type-cdr-type</strong> <em>cons-type</em></dt>
+<dd><p>Given a <code>cons</code> type, return the type its <code>cdr</code> must be, or <code>*</code>.
+</p></dd></dl>
+
+<a name="index-array_002dtype_002ddimensions"></a>
+<a name="Function-array_002dtype_002ddimensions"></a><dl>
+<dt><a name="index-array_002dtype_002ddimensions-1"></a>Function: <strong>array-type-dimensions</strong> <em>array-type</em></dt>
+<dd><p>Return the known dimensions of a given array type.
+A dimensions designator is either a positive fixnum, representing a rank; a list of positive fixnums or the symbol <code>*</code>, representing dimension lengths; or the symbol <code>*</code>, representing no information.
+</p></dd></dl>
+<a name="index-array_002dtype_002delement_002dtype"></a>
+<a name="Function-array_002dtype_002delement_002dtype"></a><dl>
+<dt><a name="index-array_002dtype_002delement_002dtype-1"></a>Function: <strong>array-type-element-type</strong> <em>array-type</em></dt>
+<dd><p>Return the (possibly unupgraded) specialized element-type of the given array type, or <code>*</code>.
+</p></dd></dl>
+
+<a name="index-function_002dtype_002dprimary_002dvalue"></a>
+<a name="Function-function_002dtype_002dprimary_002dvalue"></a><dl>
+<dt><a name="index-function_002dtype_002dprimary_002dvalue-1"></a>Function: <strong>function-type-primary-value</strong> <em>function-type</em></dt>
+<dd><p>Given a function type, return the type of the function&rsquo;s primary return value.
+</p></dd></dl>
+<a name="index-function_002dtype_002dreturn_002dtype"></a>
+<a name="Function-function_002dtype_002dreturn_002dtype"></a><dl>
+<dt><a name="index-function_002dtype_002dreturn_002dtype-1"></a>Function: <strong>function-type-return-type</strong> <em>function-type</em></dt>
+<dd><p>Given a function type, return the result type (which may be a values type) of that function type.
+</p></dd></dl>
+<a name="index-satisfies_002dtype_002dfunction"></a>
+<a name="Function-satisfies_002dtype_002dfunction"></a><dl>
+<dt><a name="index-satisfies_002dtype_002dfunction-1"></a>Function: <strong>satisfies-type-function</strong> <em>satisfies-type</em></dt>
+<dd><p>Given a <code>satisfies</code> type, return the name of the discriminating function it uses.
+</p></dd></dl>
+
+<a name="index-union_002dtype_002dtypes"></a>
+<a name="Function-union_002dtype_002dtypes"></a><dl>
+<dt><a name="index-union_002dtype_002dtypes-1"></a>Function: <strong>union-type-types</strong> <em>union-type</em></dt>
+<dd><p>Return the types the given union <code>(or) </code>type is composed of.
+</p></dd></dl>
+<a name="index-values_002dtype_002dprimary"></a>
+<a name="Function-values_002dtype_002dprimary"></a><dl>
+<dt><a name="index-values_002dtype_002dprimary-1"></a>Function: <strong>values-type-primary</strong> <em>maybe-values-type</em></dt>
+<dd><p>Given a values type, return the type of the primary value.
+</p></dd></dl>
+<a name="index-intersection_002dtype_002dtypes"></a>
+<a name="Function-intersection_002dtype_002dtypes"></a><dl>
+<dt><a name="index-intersection_002dtype_002dtypes-1"></a>Function: <strong>intersection-type-types</strong> <em>intersection-type</em></dt>
+<dd><p>Return the types the given intersection <code>(and) </code>type is composed of.
+</p></dd></dl>
+
+<a name="index-member_002dtype_002dmembers"></a>
+<a name="Function-member_002dtype_002dmembers"></a><dl>
+<dt><a name="index-member_002dtype_002dmembers-1"></a>Function: <strong>member-type-members</strong> <em>member-type</em></dt>
+<dd><p>Given a <code>member</code> type, return the elements of that type.
+</p></dd></dl>
+<a name="index-negation_002dtype_002dtype"></a>
+<a name="Function-negation_002dtype_002dtype"></a><dl>
+<dt><a name="index-negation_002dtype_002dtype-1"></a>Function: <strong>negation-type-type</strong> <em>negation-type</em></dt>
+<dd><p>Return the type the given negation <code>(not) </code>type is a negation of.
+</p></dd></dl>
+<a name="index-eql_002dtype_002dobject"></a>
+<a name="Function-eql_002dtype_002dobject"></a><dl>
+<dt><a name="index-eql_002dtype_002dobject-1"></a>Function: <strong>eql-type-object</strong> <em>eqltype</em></dt>
+<dd><p>Given an <code>eql</code> type, return the prototypical object objects of that type are <code>eql</code> to.
+</p></dd></dl>
+
+<a name="index-numeric_002dtype_002dhigh"></a>
+<a name="Function-numeric_002dtype_002dhigh"></a><dl>
+<dt><a name="index-numeric_002dtype_002dhigh-1"></a>Function: <strong>numeric-type-high</strong> <em>numtype</em></dt>
+<dd><p>Given a bounded numeric type (i.e. a scalar, not COMPLEX) return the known upper bound of that type.
+A bound designator is either a number, representing an inclusive bound, or a list of a number, representing an exclusive bound.
+</p></dd></dl>
+<a name="index-numeric_002dtype_002dlow"></a>
+<a name="Function-numeric_002dtype_002dlow"></a><dl>
+<dt><a name="index-numeric_002dtype_002dlow-1"></a>Function: <strong>numeric-type-low</strong> <em>numtype</em></dt>
+<dd><p>Given a bounded numeric type (i.e. a scalar, not COMPLEX) return the known lower bound of that type.
+A bound designator is either a number, representing an inclusive bound, or a list of a number, representing an exclusive bound.
+</p></dd></dl>
+
+<a name="Policy-as-Optimizations-Conditional"></a>
+<h3 class="section">2.4 Policy as Optimizations Conditional</h3>
+
+<p><tt>POLICY</tt> and <tt>POLICY-QUALITY</tt> for optimizations conditional on programmer
+wants.  If possible, implementation-specific hooks are used to access
+declaration information in environments; otherwise policy is considered
+neutral, and all variables are considered of type <tt>T</tt>, etc.
+</p>
+<a name="index-policy_002dquality"></a>
+<a name="Function-policy_002dquality"></a><dl>
+<dt><a name="index-policy_002dquality-1"></a>Function: <strong>policy-quality</strong> <em>quality &amp;optional env</em></dt>
+<dd><p>Return the value of <code>quality</code>, an optimization quality (e.g. COMPILATION-SPEED) in <code>env</code>, if possible.
+</p></dd></dl>
+<a name="index-policy"></a>
+<a name="Macro-policy"></a><dl>
+<dt><a name="index-policy-1"></a>Macro: <strong>policy</strong> <em>expr &amp;optional env</em></dt>
+<dd><p>Evaluate <code>expr</code> in an environment in which all optimization qualities (e.g. COMPILATION-SPEED) refer to their known values in <code>env</code> if possible.
+</p>
+<p>For instance, (locally (optimize (speed 3) (space 0)) (policy <code>(&gt; speed space) </code>env)) will evaluate to true (if supported).
+</p></dd></dl>
+
+<a name="NOTE_002dOPTIMIZATION_002dFAILURE"></a>
+<h3 class="section">2.5 NOTE-OPTIMIZATION-FAILURE</h3>
+
+<p>Compiler maros can note optimization information to programmers (that is,
+at compile time) with <tt>NOTE-OPTIMIZATION-FAILURE</tt>.  A tree of condition
+types is supported so that these conditions may be subclassed,
+muffled, etc.
+</p>
+<a name="index-note_002doptimization_002dfailure"></a>
+<a name="Function-note_002doptimization_002dfailure"></a><dl>
+<dt><a name="index-note_002doptimization_002dfailure-1"></a>Function: <strong>note-optimization-failure</strong> <em>datum &amp;rest args</em></dt>
+<dd><p><code>datum</code> and <code>args</code> are treated as a condition designator (type <code>optimization-note</code>, default SIMPLE-OPTIMIZATION-NOTE).  <code>warn</code> is called with this designated condition.
+</p>
+<p>This is intended to be used to display missed optimization opportunities and related information to a programmer during compilation.
+</p></dd></dl>
+<a name="index-optimization_002dnote"></a>
+<a name="Condition-optimization_002dnote"></a><dl>
+<dt><a name="index-optimization_002dnote-1"></a>Condition: <strong>optimization-note</strong></dt>
+<dd><p>Class precedence list: <code>optimization-note, style-warning, warning, condition, t</code>
+</p>
+<p>An optimization note signaled by a compiler expander of some sort.  Signaling this condition should indicate that some information (perhaps about how to improve efficiency by rearranging things to let the expander expand) should be presented to the programmer during compilation.
+</p></dd></dl>
+<a name="index-simple_002doptimization_002dnote"></a>
+<a name="Condition-simple_002doptimization_002dnote"></a><dl>
+<dt><a name="index-simple_002doptimization_002dnote-1"></a>Condition: <strong>simple-optimization-note</strong></dt>
+<dd><p>Class precedence list: <code>simple-optimization-note, optimization-note, simple-style-warning, simple-warning, simple-condition, style-warning, warning, condition, t</code>
+</p>
+<p>An <code>optimization-note</code> that is also a <code>simple-condition</code>.  Initargs <code>:format-control</code> and <code>:format-args</code>, and the readers <code>simple-condition-format-control</code> and <code>simple-condition-format-arguments</code>, are available.
+</p></dd></dl>
+
+<a name="Hints_002c-Decline_002c-Abort"></a>
+<h3 class="section">2.6 Hints, Decline, Abort</h3>
+
+<p>A simple mechanism for defining multiple compiler macro functions, called
+&quot;hints&quot;, is included (<tt>DEFINE-COMPILER-HINT</tt>, <tt>DEFINE-COMPILER-HINTER</tt>,
+<tt>COMPILER-HINT</tt>).  Each hint has a &quot;qualifier&quot;, an unevaluated object
+compared with <tt>CL:EQUAL</tt>, for establishing uniqueness etc.  Hints can give
+up on expansion with the function <tt>DECLINE-EXPANSION</tt>, or abort expansion
+entirely (e.g. if a form is invalid) with <tt>ABORT-EXPANSION</tt>; with the same
+call they may provide optimization notes.
+</p>
+<p>More involved custom mechanisms may be defined, that still use
+<tt>DECLINE-EXPANSION</tt> etc., with the macros <tt>WITH-EXPANSION-DECLINATION</tt> and
+<tt>WITH-EXPANSION-ABORTION</tt>.  Something with similar syntax to CLOS is
+planned, if this library gets users.
+</p>
+<p>Finally, so that the results of optimizations can be seen easily,
+<tt>COMPILER-MACROEXPAND</tt> and <tt>COMPILER-MACROEXPAND-1</tt> are trivially defined. 
+They are analogous to <tt>CL:MACROEXPAND</tt> and <tt>CL:MACROEXPAND-1</tt>.
+</p>
+<a name="index-define_002dcompiler_002dhint"></a>
+<a name="Macro-define_002dcompiler_002dhint"></a><dl>
+<dt><a name="index-define_002dcompiler_002dhint-1"></a>Macro: <strong>define-compiler-hint</strong> <em>name lambda-list qual &amp;body body</em></dt>
+<dd><p>Define a compiler hint for <code>name</code>.
+</p>
+<p><code>lambda-list</code> is a compiler macro lambda list, that is a macro lambda list, and with <code>body</code> will be used to form a hint expander function.
+</p>
+<p><code>qual</code> is an arbitrary object, which is compared (with CL:EQUAL) to establish uniqueness of the hint, for redefinition, and retrieval with <code>compiler-hint</code>.
+</p>
+<p>Hint functions have an implicit block with the usual name, can have declarations and docstrings, etc.
+</p>
+<p>Hint functions can call <code>decline-expansion</code> in order to decline to expand immediately. This is intended as a replacement for the old-style &quot;return the original form&quot; protocol, though that is also supported.
+</p></dd></dl>
+<a name="index-define_002dcompiler_002dhinter"></a>
+<a name="Macro-define_002dcompiler_002dhinter"></a><dl>
+<dt><a name="index-define_002dcompiler_002dhinter-1"></a>Macro: <strong>define-compiler-hinter</strong> <em>name lambda-list &amp;body options</em></dt>
+<dd><p>Define <code>name</code> to have a hinter expansion as its compiler macro.  See DEFINE-COMPILER-HINT&rsquo;s documentation.
+</p>
+<p>Supported options: :documentation
+</p></dd></dl>
+<a name="index-compiler_002dhint"></a>
+<a name="Function-compiler_002dhint"></a><dl>
+<dt><a name="index-compiler_002dhint-1"></a>Function: <strong>compiler-hint</strong> <em>name qual</em></dt>
+<dd><p>Retrieve the hint function for <code>name</code>, identified by <code>qual</code> compared via <code>cl:equal</code>.
+</p>
+<p>A hint function is a function of two arguments, a form and an environment, and which returns a form with the same semantics as <code>form</code> but (hopefully) more efficient.  A hint function should be prepared to receive a form beginning with its name, or a form beginning with <code>cl:funcall</code>.
+</p></dd></dl>
+<a name="index-_0028setf-compiler_002dhint_0029"></a>
+<a name="Function-_0028setf-compiler_002dhint_0029"></a><dl>
+<dt><a name="index-_0028setf-compiler_002dhint_0029-1"></a>Function: <strong>(setf compiler-hint)</strong> <em>new-value name qual</em></dt>
+<dd><p>Set the hint function for <code>name</code>, identified by <code>qual</code> compared via <code>cl:equal</code>.
+</p>
+<p>A hint function is a function of two arguments, a form and an environment, and which returns a form with the same semantics as <code>form</code> but (hopefully) more efficient, or otherwise changed.
+</p></dd></dl>
+<a name="index-abort_002dexpansion"></a>
+<a name="Function-abort_002dexpansion"></a><dl>
+<dt><a name="index-abort_002dexpansion-1"></a>Function: <strong>abort-expansion</strong> <em>&amp;optional datum &amp;rest args</em></dt>
+<dd><p>Like <code>decline-expansion</code>, but immediately aborts all expansion of the form (e.g. including in other hints), forcing the form to be used as-is.  This should be used, for example, when enough analysis is done to see that a form will be an error at runtime.
+</p></dd></dl>
+<a name="index-decline_002dexpansion"></a>
+<a name="Function-decline_002dexpansion"></a><dl>
+<dt><a name="index-decline_002dexpansion-1"></a>Function: <strong>decline-expansion</strong> <em>&amp;optional datum &amp;rest args</em></dt>
+<dd><p>This function should be called by compiler macroexpanders that reach a point such that they do not wish to expand.
+</p>
+<p>If <code>datum</code> is provided, <code>note-optimization-failure</code> is called with <code>datum</code> and <code>args</code> to inform the programmer of the situation.
+</p>
+<p>Regardless of whether <code>datum</code> is provided, if called in the appropriate dynamic context, a non-local control transfer will immediately occur, halting expansion.
+</p></dd></dl>
+<a name="index-with_002dexpansion_002dabortion"></a>
+<a name="Macro-with_002dexpansion_002dabortion"></a><dl>
+<dt><a name="index-with_002dexpansion_002dabortion-1"></a>Macro: <strong>with-expansion-abortion</strong> <em>&amp;body body</em></dt>
+<dd><p>Within the dynamic extent of <code>body</code>, <code>abort-expansion</code> will immediately return <code>nil</code> from the <code>with-expansion-declination</code> form.
+</p>
+<p>This is intended for use in &quot;advanced&quot; utilities.
+</p></dd></dl>
+<a name="index-with_002dexpansion_002ddeclination"></a>
+<a name="Macro-with_002dexpansion_002ddeclination"></a><dl>
+<dt><a name="index-with_002dexpansion_002ddeclination-1"></a>Macro: <strong>with-expansion-declination</strong> <em>&amp;body body</em></dt>
+<dd><p>Within the dynamic extent of <code>body</code>, <code>decline-expansion</code> will immediately return <code>nil</code> from the <code>with-expansion-declination</code> form.
+</p>
+<p>This is intended for use in &quot;advanced&quot; utilities.
+</p></dd></dl>
+
+<a name="Misc-API"></a>
+<h3 class="section">2.7 Misc API</h3>
+
+<a name="index-compiler_002dmacro_002dredefinition_002dwarning"></a>
+<a name="Condition-compiler_002dmacro_002dredefinition_002dwarning"></a><dl>
+<dt><a name="index-compiler_002dmacro_002dredefinition_002dwarning-1"></a>Condition: <strong>compiler-macro-redefinition-warning</strong></dt>
+<dd><p>Class precedence list: <code>compiler-macro-redefinition-warning, style-warning, warning, condition, t</code>
+</p>
+<p>A style warning signaled when a compiler macro is redefined incompatibly.
+The redefined name is readable with <code>compiler-macro-redefinition-warning-name</code>.
+</p></dd></dl>
+<a name="index-compiler_002dmacroexpand_002d1"></a>
+<a name="Function-compiler_002dmacroexpand_002d1"></a><dl>
+<dt><a name="index-compiler_002dmacroexpand_002d1-1"></a>Function: <strong>compiler-macroexpand-1</strong> <em>form &amp;optional env</em></dt>
+<dd><p>As MACROEXPAND-1, but uses compiler macros rather than macros.  (as a consequence of this, forms like <code>(funcall (function foo) ...) </code>may be expanded with FOO&rsquo;s compiler macro.)
+</p></dd></dl>
+<a name="index-compiler_002dmacroexpand"></a>
+<a name="Function-compiler_002dmacroexpand"></a><dl>
+<dt><a name="index-compiler_002dmacroexpand-1"></a>Function: <strong>compiler-macroexpand</strong> <em>form &amp;optional env</em></dt>
+<dd><p>As <code>macroexpand</code>, but uses compiler macros rather than macros.  (as a consequence of this, forms like <code>(funcall (function foo) ...) </code>may be expanded with FOO&rsquo;s compiler macro.)
+</p></dd></dl>
+
+
+<hr>
+<a name="Function-Index"></a>
+<div class="header">
+<p>
+Next: <a href="#Type-Index" accesskey="n" rel="next">Type Index</a>, Previous: <a href="#API" accesskey="p" rel="prev">API</a>, Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<a name="Function-Index-1"></a>
+<h2 class="appendix">Appendix A Function Index</h2>
+
+<table><tr><th valign="top">Jump to: &nbsp; </th><td><a class="summary-letter" href="#Function-Index_fn_symbol-1"><b>(</b></a>
+ &nbsp; 
+<br>
+<a class="summary-letter" href="#Function-Index_fn_letter-A"><b>A</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-C"><b>C</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-D"><b>D</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-E"><b>E</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-F"><b>F</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-I"><b>I</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-K"><b>K</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-M"><b>M</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-N"><b>N</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-P"><b>P</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-S"><b>S</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-U"><b>U</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-V"><b>V</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-W"><b>W</b></a>
+ &nbsp; 
+</td></tr></table>
+<table class="index-fn" border="0">
+<tr><td></td><th align="left">Index Entry</th><td>&nbsp;</td><th align="left"> Section</th></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Function-Index_fn_symbol-1">(</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-_0028setf-compiler_002dhint_0029"><code>(setf compiler-hint)</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-_0028setf-compiler_002dhint_0029-1"><code>(setf compiler-hint)</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-_0028setf-find_002dinferrer_0029"><code>(setf find-inferrer)</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-_0028setf-find_002dinferrer_0029-1"><code>(setf find-inferrer)</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Function-Index_fn_letter-A">A</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-abort_002dexpansion"><code>abort-expansion</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-abort_002dexpansion-1"><code>abort-expansion</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-array_002dtype_002ddimensions"><code>array-type-dimensions</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-array_002dtype_002ddimensions-1"><code>array-type-dimensions</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-array_002dtype_002delement_002dtype"><code>array-type-element-type</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-array_002dtype_002delement_002dtype-1"><code>array-type-element-type</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Function-Index_fn_letter-C">C</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-compiler_002dhint"><code>compiler-hint</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-compiler_002dhint-1"><code>compiler-hint</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-compiler_002dmacroexpand"><code>compiler-macroexpand</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-compiler_002dmacroexpand-1"><code>compiler-macroexpand</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-compiler_002dmacroexpand_002d1"><code>compiler-macroexpand-1</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-compiler_002dmacroexpand_002d1-1"><code>compiler-macroexpand-1</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-complex_002dtype_002delement_002dtype"><code>complex-type-element-type</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-complex_002dtype_002delement_002dtype-1"><code>complex-type-element-type</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-cons_002dtype_002dcar_002dtype"><code>cons-type-car-type</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-cons_002dtype_002dcar_002dtype-1"><code>cons-type-car-type</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-cons_002dtype_002dcdr_002dtype"><code>cons-type-cdr-type</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-cons_002dtype_002dcdr_002dtype-1"><code>cons-type-cdr-type</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Function-Index_fn_letter-D">D</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-decline_002dexpansion"><code>decline-expansion</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-decline_002dexpansion-1"><code>decline-expansion</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-define_002dcompiler_002dhint"><code>define-compiler-hint</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-define_002dcompiler_002dhint-1"><code>define-compiler-hint</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-define_002dcompiler_002dhinter"><code>define-compiler-hinter</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-define_002dcompiler_002dhinter-1"><code>define-compiler-hinter</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-define_002dinferrer"><code>define-inferrer</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-define_002dinferrer-1"><code>define-inferrer</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Function-Index_fn_letter-E">E</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-ekindcase"><code>ekindcase</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-ekindcase-1"><code>ekindcase</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-eql_002dtype_002dobject"><code>eql-type-object</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-eql_002dtype_002dobject-1"><code>eql-type-object</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Function-Index_fn_letter-F">F</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-find_002dinferrer"><code>find-inferrer</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-find_002dinferrer-1"><code>find-inferrer</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-form_002dtype"><code>form-type</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-form_002dtype-1"><code>form-type</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-form_002dtypecase"><code>form-typecase</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-form_002dtypecase-1"><code>form-typecase</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-form_002dtypep"><code>form-typep</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-form_002dtypep-1"><code>form-typep</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-function_002dtype_002dprimary_002dvalue"><code>function-type-primary-value</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-function_002dtype_002dprimary_002dvalue-1"><code>function-type-primary-value</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-function_002dtype_002dreturn_002dtype"><code>function-type-return-type</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-function_002dtype_002dreturn_002dtype-1"><code>function-type-return-type</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Function-Index_fn_letter-I">I</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-intersection_002dtype_002dtypes"><code>intersection-type-types</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-intersection_002dtype_002dtypes-1"><code>intersection-type-types</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Function-Index_fn_letter-K">K</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-kind_002dof"><code>kind-of</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-kind_002dof-1"><code>kind-of</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-kindcase"><code>kindcase</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-kindcase-1"><code>kindcase</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-kindp"><code>kindp</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-kindp-1"><code>kindp</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Function-Index_fn_letter-M">M</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-member_002dtype_002dmembers"><code>member-type-members</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-member_002dtype_002dmembers-1"><code>member-type-members</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Function-Index_fn_letter-N">N</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-negation_002dtype_002dtype"><code>negation-type-type</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-negation_002dtype_002dtype-1"><code>negation-type-type</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-note_002doptimization_002dfailure"><code>note-optimization-failure</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-note_002doptimization_002dfailure-1"><code>note-optimization-failure</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-numeric_002dtype_002dhigh"><code>numeric-type-high</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-numeric_002dtype_002dhigh-1"><code>numeric-type-high</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-numeric_002dtype_002dlow"><code>numeric-type-low</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-numeric_002dtype_002dlow-1"><code>numeric-type-low</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Function-Index_fn_letter-P">P</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-policy"><code>policy</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-policy-1"><code>policy</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-policy_002dquality"><code>policy-quality</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-policy_002dquality-1"><code>policy-quality</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Function-Index_fn_letter-S">S</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-satisfies_002dtype_002dfunction"><code>satisfies-type-function</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-satisfies_002dtype_002dfunction-1"><code>satisfies-type-function</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Function-Index_fn_letter-U">U</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-union_002dtype_002dtypes"><code>union-type-types</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-union_002dtype_002dtypes-1"><code>union-type-types</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Function-Index_fn_letter-V">V</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-values_002dtype_002dprimary"><code>values-type-primary</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-values_002dtype_002dprimary-1"><code>values-type-primary</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Function-Index_fn_letter-W">W</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-with_002dexpansion_002dabortion"><code>with-expansion-abortion</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-with_002dexpansion_002dabortion-1"><code>with-expansion-abortion</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-with_002dexpansion_002ddeclination"><code>with-expansion-declination</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-with_002dexpansion_002ddeclination-1"><code>with-expansion-declination</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+</table>
+<table><tr><th valign="top">Jump to: &nbsp; </th><td><a class="summary-letter" href="#Function-Index_fn_symbol-1"><b>(</b></a>
+ &nbsp; 
+<br>
+<a class="summary-letter" href="#Function-Index_fn_letter-A"><b>A</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-C"><b>C</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-D"><b>D</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-E"><b>E</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-F"><b>F</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-I"><b>I</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-K"><b>K</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-M"><b>M</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-N"><b>N</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-P"><b>P</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-S"><b>S</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-U"><b>U</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-V"><b>V</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Function-Index_fn_letter-W"><b>W</b></a>
+ &nbsp; 
+</td></tr></table>
+
+
+<hr>
+<a name="Type-Index"></a>
+<div class="header">
+<p>
+Previous: <a href="#Function-Index" accesskey="p" rel="prev">Function Index</a>, Up: <a href="#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<a name="Type-Index-1"></a>
+<h2 class="appendix">Appendix B Type Index</h2>
+
+<table><tr><th valign="top">Jump to: &nbsp; </th><td><a class="summary-letter" href="#Type-Index_tp_letter-C"><b>C</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Type-Index_tp_letter-O"><b>O</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Type-Index_tp_letter-S"><b>S</b></a>
+ &nbsp; 
+</td></tr></table>
+<table class="index-tp" border="0">
+<tr><td></td><th align="left">Index Entry</th><td>&nbsp;</td><th align="left"> Section</th></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Type-Index_tp_letter-C">C</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-compiler_002dmacro_002dredefinition_002dwarning"><code>compiler-macro-redefinition-warning</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-compiler_002dmacro_002dredefinition_002dwarning-1"><code>compiler-macro-redefinition-warning</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Type-Index_tp_letter-O">O</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-optimization_002dnote"><code>optimization-note</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-optimization_002dnote-1"><code>optimization-note</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+<tr><th><a name="Type-Index_tp_letter-S">S</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-simple_002doptimization_002dnote"><code>simple-optimization-note</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-simple_002doptimization_002dnote-1"><code>simple-optimization-note</code></a>:</td><td>&nbsp;</td><td valign="top"><a href="#API">API</a></td></tr>
+<tr><td colspan="4"> <hr></td></tr>
+</table>
+<table><tr><th valign="top">Jump to: &nbsp; </th><td><a class="summary-letter" href="#Type-Index_tp_letter-C"><b>C</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Type-Index_tp_letter-O"><b>O</b></a>
+ &nbsp; 
+<a class="summary-letter" href="#Type-Index_tp_letter-S"><b>S</b></a>
+ &nbsp; 
+</td></tr></table>
+
+<hr>
+
+
+
+</body>
+</html>

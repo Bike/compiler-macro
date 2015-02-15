@@ -1,0 +1,6 @@
+@findex numeric-type-high
+@anchor{Function numeric-type-high}
+@deffn {Function} {numeric-type-high} numtype
+Given a bounded numeric type (i.e. a scalar, not COMPLEX) return the known upper bound of that type.
+A bound designator is either a number, representing an inclusive bound, or a list of a number, representing an exclusive bound.
+@end deffn

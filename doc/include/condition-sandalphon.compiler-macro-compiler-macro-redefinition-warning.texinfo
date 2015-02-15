@@ -1,0 +1,8 @@
+@tindex compiler-macro-redefinition-warning
+@anchor{Condition compiler-macro-redefinition-warning}
+@deftp {Condition} {compiler-macro-redefinition-warning}
+Class precedence list: @code{compiler-macro-redefinition-warning, style-warning, warning, condition, t}
+
+A style warning signaled when a compiler macro is redefined incompatibly.
+The redefined name is readable with @code{compiler-macro-redefinition-warning-name}.
+@end deftp

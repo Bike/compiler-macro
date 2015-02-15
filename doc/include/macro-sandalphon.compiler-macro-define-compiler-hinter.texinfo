@@ -1,0 +1,7 @@
+@findex define-compiler-hinter
+@anchor{Macro define-compiler-hinter}
+@deffn {Macro} {define-compiler-hinter} name lambda-list &body options
+Define @code{name} to have a hinter expansion as its compiler macro.  See DEFINE-COMPILER-HINT's documentation.
+
+Supported options: :documentation
+@end deffn

@@ -1,0 +1,5 @@
+@findex @setf{find-inferrer}
+@anchor{Function (setf find-inferrer)}
+@deffn {Function} {@setf{find-inferrer}} new-value name
+Set the type inference function for @code{name}.  The function should be one suitable as a macroexpander, except that it should return a type specifier.  See @code{define-inferrer} for more information.
+@end deffn

@@ -1,0 +1,9 @@
+@findex decline-expansion
+@anchor{Function decline-expansion}
+@deffn {Function} {decline-expansion} &optional datum &rest args
+This function should be called by compiler macroexpanders that reach a point such that they do not wish to expand.
+
+If @code{datum} is provided, @code{note-optimization-failure} is called with @code{datum} and @code{args} to inform the programmer of the situation.
+
+Regardless of whether @code{datum} is provided, if called in the appropriate dynamic context, a non-local control transfer will immediately occur, halting expansion.
+@end deffn

@@ -1,0 +1,5 @@
+@findex form-typecase
+@anchor{Macro form-typecase}
+@deffn {Macro} {form-typecase} form-form env-form &body cases
+Executes the cdr of the first case such that FORM-FORM's type (derived through @code{form-type} with ENV-FORM) is a subtype of the car of that case.  If no case matches, @code{nil} is returned.
+@end deffn

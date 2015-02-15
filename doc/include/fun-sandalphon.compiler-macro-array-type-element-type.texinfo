@@ -1,0 +1,5 @@
+@findex array-type-element-type
+@anchor{Function array-type-element-type}
+@deffn {Function} {array-type-element-type} array-type
+Return the (possibly unupgraded) specialized element-type of the given array type, or @code{*}.
+@end deffn

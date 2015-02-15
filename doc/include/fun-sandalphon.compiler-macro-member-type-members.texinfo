@@ -1,0 +1,5 @@
+@findex member-type-members
+@anchor{Function member-type-members}
+@deffn {Function} {member-type-members} member-type
+Given a @code{member} type, return the elements of that type.
+@end deffn

@@ -1,0 +1,5 @@
+@findex values-type-primary
+@anchor{Function values-type-primary}
+@deffn {Function} {values-type-primary} maybe-values-type
+Given a values type, return the type of the primary value.
+@end deffn

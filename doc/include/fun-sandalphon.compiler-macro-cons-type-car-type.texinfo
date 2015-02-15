@@ -1,0 +1,5 @@
+@findex cons-type-car-type
+@anchor{Function cons-type-car-type}
+@deffn {Function} {cons-type-car-type} cons-type
+Given a @code{cons} type, return the type its @code{car} must be, or @code{*}.
+@end deffn

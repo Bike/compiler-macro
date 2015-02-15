@@ -1,0 +1,7 @@
+@findex compiler-hint
+@anchor{Function compiler-hint}
+@deffn {Function} {compiler-hint} name qual
+Retrieve the hint function for @code{name}, identified by @code{qual} compared via @code{cl:equal}.
+
+A hint function is a function of two arguments, a form and an environment, and which returns a form with the same semantics as @code{form} but (hopefully) more efficient.  A hint function should be prepared to receive a form beginning with its name, or a form beginning with @code{cl:funcall}.
+@end deffn

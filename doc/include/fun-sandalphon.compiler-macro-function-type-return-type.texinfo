@@ -1,0 +1,5 @@
+@findex function-type-return-type
+@anchor{Function function-type-return-type}
+@deffn {Function} {function-type-return-type} function-type
+Given a function type, return the result type (which may be a values type) of that function type.
+@end deffn

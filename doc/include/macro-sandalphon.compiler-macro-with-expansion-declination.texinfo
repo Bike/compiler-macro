@@ -1,0 +1,7 @@
+@findex with-expansion-declination
+@anchor{Macro with-expansion-declination}
+@deffn {Macro} {with-expansion-declination} &body body
+Within the dynamic extent of @code{body}, @code{decline-expansion} will immediately return @code{nil} from the @code{with-expansion-declination} form.
+
+This is intended for use in "advanced" utilities.
+@end deffn

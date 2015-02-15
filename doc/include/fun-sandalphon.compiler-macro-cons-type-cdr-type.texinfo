@@ -1,0 +1,5 @@
+@findex cons-type-cdr-type
+@anchor{Function cons-type-cdr-type}
+@deffn {Function} {cons-type-cdr-type} cons-type
+Given a @code{cons} type, return the type its @code{cdr} must be, or @code{*}.
+@end deffn

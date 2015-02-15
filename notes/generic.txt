@@ -1,7 +1,0 @@
-My original half-baked design for this was rather more ambitious, and used CLOS and method combinations and things to allow really complicated optimization plans (like, say, "do some profiling, call this expander if it worked one way faster, call this other one if it worked another way faster").  Now that I've actually got something that works it would be nice to gradually work up to that.
-
-Of course it's also important to see if something complicated is even warranted.  Discriminating on derived types of args, though, that seems fairly fundamental (sbcl's deftransforms for example have it).
-
-with-expansion-declination and with-expansion-abortion should abstract things enough to make it possible to write such things on top of what already exists.
-
-It would also help remove the sucky qual mechanism.

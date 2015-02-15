@@ -1,0 +1,7 @@
+@findex note-optimization-failure
+@anchor{Function note-optimization-failure}
+@deffn {Function} {note-optimization-failure} datum &rest args
+@code{datum} and @code{args} are treated as a condition designator (type @code{optimization-note}, default SIMPLE-OPTIMIZATION-NOTE).  @code{warn} is called with this designated condition.
+
+This is intended to be used to display missed optimization opportunities and related information to a programmer during compilation.
+@end deffn

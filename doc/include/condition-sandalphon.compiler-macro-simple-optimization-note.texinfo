@@ -1,0 +1,7 @@
+@tindex simple-optimization-note
+@anchor{Condition simple-optimization-note}
+@deftp {Condition} {simple-optimization-note}
+Class precedence list: @code{simple-optimization-note, optimization-note, simple-style-warning, simple-warning, simple-condition, style-warning, warning, condition, t}
+
+An @code{optimization-note} that is also a @code{simple-condition}.  Initargs @code{:format-control} and @code{:format-args}, and the readers @code{simple-condition-format-control} and @code{simple-condition-format-arguments}, are available.
+@end deftp

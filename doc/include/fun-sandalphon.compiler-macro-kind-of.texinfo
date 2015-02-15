@@ -1,0 +1,5 @@
+@findex kind-of
+@anchor{Function kind-of}
+@deffn {Function} {kind-of} type
+Return a kind designator appropriate for @code{type}.  See @code{kindp} for an explanation of kinds.
+@end deffn

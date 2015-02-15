@@ -1,0 +1,7 @@
+@tindex optimization-note
+@anchor{Condition optimization-note}
+@deftp {Condition} {optimization-note}
+Class precedence list: @code{optimization-note, style-warning, warning, condition, t}
+
+An optimization note signaled by a compiler expander of some sort.  Signaling this condition should indicate that some information (perhaps about how to improve efficiency by rearranging things to let the expander expand) should be presented to the programmer during compilation.
+@end deftp

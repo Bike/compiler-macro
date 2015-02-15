@@ -1,0 +1,13 @@
+@findex define-compiler-hint
+@anchor{Macro define-compiler-hint}
+@deffn {Macro} {define-compiler-hint} name lambda-list qual &body body
+Define a compiler hint for @code{name}.
+
+@code{lambda-list} is a compiler macro lambda list, that is a macro lambda list, and with @code{body} will be used to form a hint expander function.
+
+@code{qual} is an arbitrary object, which is compared (with CL:EQUAL) to establish uniqueness of the hint, for redefinition, and retrieval with @code{compiler-hint}.
+
+Hint functions have an implicit block with the usual name, can have declarations and docstrings, etc.
+
+Hint functions can call @code{decline-expansion} in order to decline to expand immediately. This is intended as a replacement for the old-style "return the original form" protocol, though that is also supported.
+@end deffn
