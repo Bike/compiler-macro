@@ -19,7 +19,8 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
   "A hash table from function names to alists of compiler macro hints.")
 
 (defun compiler-hinter-lambda (name)
-  "Return a compiler macroexpander closure that calls all the hints (in *COMPILER-HINTS*) for the given NAME, and returns the first successful expansion (or the form it's provided with)."
+  "Return a compiler macroexpander closure that calls all the hints (in *COMPILER-HINTS*) for the
+given NAME, and returns the first successful expansion (or the form it's provided with)."
   ;; sure is arrow in here
   (lambda (form env)
     (block done
@@ -33,7 +34,8 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
       form)))
 
 (defmacro define-compiler-hinter (name lambda-list &body options)
-  "Define NAME to have a hinter expansion as its compiler macro.  See DEFINE-COMPILER-HINT's documentation.
+  "Define NAME to have a hinter expansion as its compiler macro.  See DEFINE-COMPILER-HINT's
+documentation.
 
 Supported options: :documentation"
   (declare (ignore lambda-list))
@@ -54,13 +56,17 @@ Supported options: :documentation"
 (defmacro define-compiler-hint (name lambda-list qual &body body &environment env)
   "Define a compiler hint for NAME.
 
-LAMBDA-LIST is a compiler macro lambda list, that is a macro lambda list, and with BODY will be used to form a hint expander function.
+LAMBDA-LIST is a compiler macro lambda list, that is a macro lambda list, and with BODY will be used
+to form a hint expander function.
 
-QUAL is an arbitrary object, which is compared (with CL:EQUAL) to establish uniqueness of the hint, for redefinition, and retrieval with COMPILER-HINT.
+QUAL is an arbitrary object, which is compared (with CL:EQUAL) to establish uniqueness of the hint,
+for redefinition, and retrieval with COMPILER-HINT.
 
 Hint functions have an implicit block with the usual name, can have declarations and docstrings, etc.
 
-Hint functions can call DECLINE-EXPANSION in order to decline to expand immediately. This is intended as a replacement for the old-style \"return the original form\" protocol, though that is also supported."
+Hint functions can call DECLINE-EXPANSION in order to decline to expand immediately. This is intended
+as a replacement for the old-style \"return the original form\" protocol, though that is also
+supported."
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      ;; ew, double hash lookup
      (let ((existing? (compiler-hint ',name ',qual)))
@@ -73,13 +79,16 @@ Hint functions can call DECLINE-EXPANSION in order to decline to expand immediat
 (defun compiler-hint (name qual)
   "Retrieve the hint function for NAME, identified by QUAL compared via CL:EQUAL.
 
-A hint function is a function of two arguments, a form and an environment, and which returns a form with the same semantics as FORM but (hopefully) more efficient.  A hint function should be prepared to receive a form beginning with its name, or a form beginning with CL:FUNCALL."
+A hint function is a function of two arguments, a form and an environment, and which returns a form
+with the same semantics as FORM but (hopefully) more efficient.  A hint function should be prepared to
+receive a form beginning with its name, or a form beginning with CL:FUNCALL."
   (cdr (assoc qual (gethash name *compiler-hints*))))
 
 (defun (setf compiler-hint) (new-value name qual)
   "Set the hint function for NAME, identified by QUAL compared via CL:EQUAL.
 
-A hint function is a function of two arguments, a form and an environment, and which returns a form with the same semantics as FORM but (hopefully) more efficient, or otherwise changed."
+A hint function is a function of two arguments, a form and an environment, and which returns a form
+with the same semantics as FORM but (hopefully) more efficient, or otherwise changed."
   (check-type new-value function)
   ;; (setf (alexandria:assoc-value (gethash name *compiler-hints*) name :test #'equal) new-value)
   (let ((alist (gethash name *compiler-hints*)))

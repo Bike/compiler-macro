@@ -16,9 +16,11 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
   '((bottom-type . nil) ; has to be first, since (subtypep nil anything) => T
     (cons-type . cons) (array-type . array) (sequence-type . sequence)
     (complex-type . complex) (numeric-type . number)
-    (condition-type . condition) ; handled specially since no relation between CONDITION and CLASS is specified, etc
+    ;; handled specially since no relation between CONDITION and CLASS is specified, etc
+    (condition-type . condition)
     (class . class))
-  "For some kinds, (kindp foo KIND) is roughly (subtypep foo TYPE).  This alist maps KINDs to TYPEs for such cases.")
+  "For some kinds, (kindp foo KIND) is roughly (subtypep foo TYPE).  This alist maps KINDs to TYPEs
+for such cases.")
 
 (defun kind-of (type)
   "Return a kind designator appropriate for TYPE.  See KINDP for an explanation of kinds."
@@ -49,7 +51,9 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
       (class (class-of type)))))
 
 (defun kindp (type kind &optional environment)
-  "Like TYPEP, but for types themselves - TYPE is a type, and KIND is a kind designator.  \"kinds\" are like types of types; for example, we might say that (array * (3)) is of kind ARRAY-TYPE.  Reasoning about types in this fashion is frequently useful in reasoning about programs.
+  "Like TYPEP, but for types themselves - TYPE is a type, and KIND is a kind designator.  \"kinds\"
+are like types of types; for example, we might say that (array * (3)) is of kind ARRAY-TYPE.
+Reasoning about types in this fashion is frequently useful in reasoning about programs.
 
 Possible kind designators are:
 
@@ -58,13 +62,19 @@ UNION-TYPE: Kind of (OR ...)
 MEMBER-TYPE, EQL-TYPE, SATISFIES-TYPE are as is obvious from their names.
 NEGATION-TYPE: Kind of (NOT ...)
 
-CONS-TYPE, ARRAY-TYPE, SEQUENCE-TYPE, COMPLEX-TYPE, NUMERIC-TYPE are all as obvious, covering both atomic and compound (if this is applicable) types of their names.  CONDITION-TYPE is similar, and included because the CL standard doesn't prescribe any particular representation for the class of CONDITION.
+CONS-TYPE, ARRAY-TYPE, SEQUENCE-TYPE, COMPLEX-TYPE, NUMERIC-TYPE are all as obvious, covering both
+atomic and compound (if this is applicable) types of their names.  CONDITION-TYPE is similar, and
+included because the CL standard doesn't prescribe any particular representation for the class of
+CONDITION.
 
 BOTTOM-TYPE is used exclusively for NIL, the type of no objects.
 
-Other kinds are already integrated with CLOS.  E.g., STRUCTURE-CLASS (the name, or the class itself) is the kind of structure types, and CLASS is the kind of classes.
+Other kinds are already integrated with CLOS.  E.g., STRUCTURE-CLASS (the name, or the class itself)
+is the kind of structure types, and CLASS is the kind of classes.
 
-Compound kind designators are available.  EQL, OR, AND, and NOT are analogous to the same operators of types.  SUBTYPE can be used to designate the kind of all subtypes of a given type; that is, (kindp [t1] '(subtype [t2])) is the same as (subtypep [t1] [t2])."
+Compound kind designators are available.  EQL, OR, AND, and NOT are analogous to the same operators of
+types.  SUBTYPE can be used to designate the kind of all subtypes of a given type; that is, (kindp [t1]
+'(subtype [t2])) is the same as (subtypep [t1] [t2])."
   (flet ((subtypecheck (type)
            (let ((assoc (assoc kind *kind-types*)))
              (if assoc

@@ -44,7 +44,8 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 (defun array-type-dimensions (array-type)
   "Return the known dimensions of a given array type.
-A dimensions designator is either a positive fixnum, representing a rank; a list of positive fixnums or the symbol *, representing dimension lengths; or the symbol *, representing no information."
+A dimensions designator is either a positive fixnum, representing a rank; a list of positive fixnums
+or the symbol *, representing dimension lengths; or the symbol *, representing no information."
   (if (consp array-type)
       (ecase (first array-type)
         ((string simple-string base-string simple-vector bit-vector simple-bit-vector)
@@ -68,7 +69,8 @@ A dimensions designator is either a positive fixnum, representing a rank; a list
 
 (defun numeric-type-low (numtype)
   "Given a bounded numeric type (i.e. a scalar, not COMPLEX) return the known lower bound of that type.
-A bound designator is either a number, representing an inclusive bound, or a list of a number, representing an exclusive bound."
+A bound designator is either a number, representing an inclusive bound, or a list of a number, 
+representing an exclusive bound."
   (if (consp numtype)
       (ecase (first numtype)
         ((mod) 0)
@@ -92,7 +94,8 @@ A bound designator is either a number, representing an inclusive bound, or a lis
 
 (defun numeric-type-high (numtype)
   "Given a bounded numeric type (i.e. a scalar, not COMPLEX) return the known upper bound of that type.
-A bound designator is either a number, representing an inclusive bound, or a list of a number, representing an exclusive bound."
+A bound designator is either a number, representing an inclusive bound, or a list of a number,
+representing an exclusive bound."
   (if (consp numtype)
       (ecase (first numtype)
         ;; could use exclusive bounds (i.e. lists) but ehhhhh

@@ -14,7 +14,8 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
 (in-package #:sandalphon.compiler-macro)
 
 (defun form-type (form &optional env)
-  "Return a type such that (typep [form] [type] [env]) would return true, if [form] was evaluated in [env]."
+  "Return a type such that (typep [form] [type] [env]) would return true, if [form] was evaluated in
+[env]."
   (let ((form (macroexpand form env)))
     (typecase form
       (symbol (variable-type form env))
@@ -30,7 +31,8 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
   (subtypep (form-type form env) type env))
 
 (defmacro form-typecase (form-form env-form &body cases)
-  "Executes the cdr of the first case such that FORM-FORM's type (derived through FORM-TYPE with ENV-FORM) is a subtype of the car of that case.  If no case matches, NIL is returned."
+  "Executes the cdr of the first case such that FORM-FORM's type (derived through FORM-TYPE with
+ENV-FORM) is a subtype of the car of that case.  If no case matches, NIL is returned."
   (let ((_env (gensym "ENV"))
         ;; form-form doesn't have to be gensymed, since case-body does that.
         (_subtypep (gensym "SUBTYPEP")))
