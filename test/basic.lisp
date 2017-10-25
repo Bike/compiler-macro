@@ -10,9 +10,9 @@
 (define-compiler-macro memq (&whole whole item list &environment env)
   (if (constantp list env)
       (let ((list (eval list)))
-	;; this expansion is wrong - item can be evaluated multiple times.
-	;; but this is just for testing.
-	`(or ,@(mapcar (lambda (com) `(eq ,item ',com)) list)))
+        ;; this expansion is wrong - item can be evaluated multiple times.
+        ;; but this is just for testing.
+        `(or ,@(mapcar (lambda (com) `(eq ,item ',com)) list)))
       whole))
 
 (defun memb (item list &key (test #'eql))
@@ -34,7 +34,7 @@ out of people who don't realize that functions count as format controls.")))
   ;; fuck, man.
   ;; a lot of this should be rexamined - using type equality or set equality predicates, that sort of thing.
   (is (equal '(values integer &optional)
-	     (function-type-return-type '(function nil (values integer &optional)))))
+             (function-type-return-type '(function nil (values integer &optional)))))
   (is (eql 'integer (values-type-primary 'integer)))
   (is (eql 'null (values-type-primary '(values))))
   (is (eql 'integer (values-type-primary '(values integer))))
@@ -139,32 +139,32 @@ out of people who don't realize that functions count as format controls.")))
   (define-compiler-hint memb (item list &key test &environment env)
       "everything"
     (if (and (constantp item env) (constantp list env) (constantp test env))
-	`',(memb (eval item) (eval list) :test (eval test))
-	(decline-expansion)))
+        `',(memb (eval item) (eval list) :test (eval test))
+        (decline-expansion)))
   
   (define-compiler-hint memb (item list &key test)
       "test"
     (cond ((equal test '#'eq)
-	   `(memq ,item ,list))
-	  (t (decline-expansion "constant test is not ~s" '#'eq))))
+           `(memq ,item ,list))
+          (t (decline-expansion "constant test is not ~s" '#'eq))))
   
   (define-compiler-hint memb (item list &key test &environment env)
       "unfold"
     (if (and (constantp list env) (not (constantp item env)))
-	`(let ((item ,item)
-	       (test ,test))
-	   (or ,@(mapcar (lambda (elt) `(funcall test item ',elt)) (eval list))))
-	(decline-expansion)))
+        `(let ((item ,item)
+               (test ,test))
+           (or ,@(mapcar (lambda (elt) `(funcall test item ',elt)) (eval list))))
+        (decline-expansion)))
 
   (macrolet ((expands-to (expansion expandee)
-	       `(is (tree-equal ',expansion (compiler-macroexpand-1 ',expandee)))))
+               `(is (tree-equal ',expansion (compiler-macroexpand-1 ',expandee)))))
     (expands-to '(4) (memb 4 '(7 8 4) :test '=))
     (expands-to (memq bar (foo)) (memb bar (foo) :test #'eq))
     (expands-to (let ((item (foo))
-		      (test 'equal))
-		  (or (funcall test item '(bar))
-		      (funcall test
+                      (test 'equal))
+                  (or (funcall test item '(bar))
+                      (funcall test
  item '(baz))))
-		(memb (foo) '((bar) (baz)) :test 'equal)))
+                (memb (foo) '((bar) (baz)) :test 'equal)))
   (signals simple-optimization-note (compiler-macroexpand-1 '(memb foo bar :test #'eql)))
   (is-false (nth-value 1 (compiler-macroexpand-1 '(memb foo bar :test baz)))))

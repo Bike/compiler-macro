@@ -195,8 +195,8 @@
 
 ;;;; Hide all that machinery behind a friendly macro.
 (defmacro inline-sort ((comparator &key key (overwrite t))
-		       &body values
-		       &environment env)
+                       &body values
+                       &environment env)
   "Sorts all VALUES in ascending order with respect to COMPARATOR and
    KEY.  COMPARATOR should be a strict order, like CL:<, and KEY defaults
    to NIL (which is interpreted as the identity).  By default, the result
@@ -297,41 +297,41 @@
 
 (defun maybe-emit-unrolled-merge-sort (fun sequence predicate key env)
   (unless (policy (and (> speed space)
-		       (or (zerop space)
-			   (> speed compilation-speed)))
-		  env)
+                       (or (zerop space)
+                           (> speed compilation-speed)))
+                  env)
     (decline-expansion))
   (let* ((sequence-type (form-type sequence env))
-	 (dimensions (array-type-dimensions-or-give-up
-		      sequence-type)))
+         (dimensions (array-type-dimensions-or-give-up
+                      sequence-type)))
     (unless (typep dimensions '(cons integer null))
       (decline-expansion
        "~@<sequence argument isn't a vector of known length~:@>" #+ccl nil))
     (let ((length (first dimensions)))
        ;; TODO: change max length to be declaration-controlled rather than dynamically-controlled?
       (when (> length *unrolled-vector-sort-max-length*)
-	(decline-expansion
-	 "~@<sequence argument too long for unrolled sort ~
+        (decline-expansion
+         "~@<sequence argument too long for unrolled sort ~
               (length ~S greater than ~S)~:@>"
-	 length *unrolled-vector-sort-max-length*))
+         length *unrolled-vector-sort-max-length*))
       (if (<= length 1)
-	  `(prog1 ,sequence ,predicate ,key) ; gotta evaluate those args
-	  (alexandria:with-gensyms (seqvar)
-	    ;; remember evaluation order - sequence, then predicate, then key.
-	    ;; (tabasco:inline-sort covers predicate and key)
-	    `(let* ((,seqvar ,sequence))
-	       (declare (type ,sequence-type ,seqvar))
-	       (if (array-has-fill-pointer-p ,seqvar)
-		   ;; only the elements up to the fill pointer should be sorted.
-		   ;; since that varies, just give up (at runtime...) if necessary
-		   (locally (declare (notinline ,fun)) ; don't expand recursively (kind of a big hammer...)
-		     (,fun ,seqvar ,predicate :key ,key))
-		   (locally (declare #+sbcl (optimize (sb-c::insert-array-bounds-checks 0)))
-		     (tabasco:inline-sort ((alexandria:ensure-function ,predicate)
-					   ,@(when key `(:key (alexandria:ensure-function ,key))))
-					  ,@(loop for i below length collect
-						 `(aref ,seqvar i)))))
-	       ,seqvar))))))
+          `(prog1 ,sequence ,predicate ,key) ; gotta evaluate those args
+          (alexandria:with-gensyms (seqvar)
+            ;; remember evaluation order - sequence, then predicate, then key.
+            ;; (tabasco:inline-sort covers predicate and key)
+            `(let* ((,seqvar ,sequence))
+               (declare (type ,sequence-type ,seqvar))
+               (if (array-has-fill-pointer-p ,seqvar)
+                   ;; only the elements up to the fill pointer should be sorted.
+                   ;; since that varies, just give up (at runtime...) if necessary
+                   (locally (declare (notinline ,fun)) ; don't expand recursively (kind of a big hammer...)
+                     (,fun ,seqvar ,predicate :key ,key))
+                   (locally (declare #+sbcl (optimize (sb-c::insert-array-bounds-checks 0)))
+                     (tabasco:inline-sort ((alexandria:ensure-function ,predicate)
+                                           ,@(when key `(:key (alexandria:ensure-function ,key))))
+                                          ,@(loop for i below length collect
+                                                 `(aref ,seqvar i)))))
+               ,seqvar))))))
 
 (define-compiler-hint sort (sequence predicate &key key &environment env)
   "Unroll sort of short vectors." 
