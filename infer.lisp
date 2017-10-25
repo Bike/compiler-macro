@@ -54,7 +54,7 @@ Defined inferrers can be accessed with FIND-INFERRER."
      (when (find-inferrer ',name)
        (style-warn "Redefining inferrer for ~s" ',name))
      (setf (find-inferrer ',name)
-	   ,(parse-macro name lambda-list body env))))
+           ,(parse-macro name lambda-list body env))))
 
 (define-inferrer the (&whole the value-type form)
   (declare (ignore form))
@@ -64,13 +64,13 @@ Defined inferrers can be accessed with FIND-INFERRER."
 
 (define-inferrer function (name &environment env)
   (cond ((or (symbolp name) (and (listp name) (eq (first name) 'setf)))
-	 ;; name
-	 (function-type name env))
-	((and (listp name) (eq (first name) 'lambda))
-	 '(function * *))
-	(t
-	 ;; i dunno
-	 (warn "invalid ~s form ~s" 'function `(function ,name)))))
+         ;; name
+         (function-type name env))
+        ((and (listp name) (eq (first name) 'lambda))
+         '(function * *))
+        (t
+         ;; i dunno
+         (warn "invalid ~s form ~s" 'function `(function ,name)))))
 
 (define-inferrer quote (thing)
   `(eql ,thing))

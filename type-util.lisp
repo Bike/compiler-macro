@@ -23,12 +23,12 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
 (defun values-type-primary (maybe-values-type)
   "Given a values type, return the type of the primary value."
   (cond ((and (consp maybe-values-type) (eql (first maybe-values-type) 'values))
-	 ;; not the best...
-	 (dolist (arg (rest maybe-values-type) 'null) ; take care of (values)
-	   (unless (member arg lambda-list-keywords)
-	     (return-from values-type-primary arg))))
-	((eql maybe-values-type '*) 't)
-	(t maybe-values-type)))
+         ;; not the best...
+         (dolist (arg (rest maybe-values-type) 'null) ; take care of (values)
+           (unless (member arg lambda-list-keywords)
+             (return-from values-type-primary arg))))
+        ((eql maybe-values-type '*) 't)
+        (t maybe-values-type)))
 
 (defun function-type-primary-value (function-type)
   "Given a function type, return the type of the function's primary return value."
@@ -47,13 +47,13 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
 A dimensions designator is either a positive fixnum, representing a rank; a list of positive fixnums or the symbol *, representing dimension lengths; or the symbol *, representing no information."
   (if (consp array-type)
       (ecase (first array-type)
-	((string simple-string base-string simple-vector bit-vector simple-bit-vector)
-	 (if (second array-type) (list (second array-type)) '*))
-	((vector) (if (third array-type) (list (third array-type)) '*))
-	((array simple-array) (or (third array-type) '*)))
+        ((string simple-string base-string simple-vector bit-vector simple-bit-vector)
+         (if (second array-type) (list (second array-type)) '*))
+        ((vector) (if (third array-type) (list (third array-type)) '*))
+        ((array simple-array) (or (third array-type) '*)))
       (ecase array-type
-	((array simple-array vector simple-string simple-vector bit-vector simple-bit-vector)
-	 '*))))
+        ((array simple-array vector simple-string simple-vector bit-vector simple-bit-vector)
+         '*))))
 
 (defun union-type-types (union-type)
   "Return the types the given union (OR) type is composed of."
@@ -71,48 +71,48 @@ A dimensions designator is either a positive fixnum, representing a rank; a list
 A bound designator is either a number, representing an inclusive bound, or a list of a number, representing an exclusive bound."
   (if (consp numtype)
       (ecase (first numtype)
-	((mod) 0)
-	((unsigned-byte) 0)
-	((signed-byte) (let ((exp (second numtype)))
-			 (if (numberp exp)
-			     (- (expt 2 (1- exp)))
-			     '*)))
-	((float
-	  short-float single-float double-float long-float
-	  real rational integer)
-	 (second numtype))
-	((ratio) '*))
+        ((mod) 0)
+        ((unsigned-byte) 0)
+        ((signed-byte) (let ((exp (second numtype)))
+                         (if (numberp exp)
+                             (- (expt 2 (1- exp)))
+                             '*)))
+        ((float
+          short-float single-float double-float long-float
+          real rational integer)
+         (second numtype))
+        ((ratio) '*))
       (ecase numtype
-	((fixnum) most-negative-fixnum)
-	((unsigned-byte) 0)
-	((float
-	  short-float single-float double-float long-float
-	  real rational integer ratio signed-byte)
-	 '*))))
+        ((fixnum) most-negative-fixnum)
+        ((unsigned-byte) 0)
+        ((float
+          short-float single-float double-float long-float
+          real rational integer ratio signed-byte)
+         '*))))
 
 (defun numeric-type-high (numtype)
   "Given a bounded numeric type (i.e. a scalar, not COMPLEX) return the known upper bound of that type.
 A bound designator is either a number, representing an inclusive bound, or a list of a number, representing an exclusive bound."
   (if (consp numtype)
       (ecase (first numtype)
-	;; could use exclusive bounds (i.e. lists) but ehhhhh
-	((mod) (1- (second numtype)))
-	((unsigned-byte) (1- (expt 2 (second numtype))))
-	((signed-byte) (let ((exp (second numtype)))
-			 (if (numberp exp)
-			     (1- (expt 2 (1- exp)))
-			     '*)))
-	((float
-	  short-float single-float double-float long-float
-	  real rational integer)
-	 (third numtype))
-	((ratio) '*))
+        ;; could use exclusive bounds (i.e. lists) but ehhhhh
+        ((mod) (1- (second numtype)))
+        ((unsigned-byte) (1- (expt 2 (second numtype))))
+        ((signed-byte) (let ((exp (second numtype)))
+                         (if (numberp exp)
+                             (1- (expt 2 (1- exp)))
+                             '*)))
+        ((float
+          short-float single-float double-float long-float
+          real rational integer)
+         (third numtype))
+        ((ratio) '*))
       (ecase numtype
-	((fixnum) most-positive-fixnum)
-	((float
-	  short-float single-float double-float long-float
-	  real rational integer ratio signed-byte unsigned-byte)
-	 '*))))
+        ((fixnum) most-positive-fixnum)
+        ((float
+          short-float single-float double-float long-float
+          real rational integer ratio signed-byte unsigned-byte)
+         '*))))
 
 (defun complex-type-element-type (complex-type)
   "Given a complex type, return the (possibly unupgraded) element-type, or *."

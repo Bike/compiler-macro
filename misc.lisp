@@ -15,5 +15,5 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
   (let ((key (gensym "KEY")))
     `(let ((,key ,keyform))
        (cond ,@(mapcar (lambda (case) `((,fun ,key ',(first case)) ,@(rest case))) cases)
-	     ;; TODO: make error suck less
-	     ,@(when errorp (list `(t (error "~s fell through ~s expression" ,key ',name))))))))
+             ;; TODO: make error suck less
+             ,@(when errorp (list `(t (error "~s fell through ~s expression" ,key ',name))))))))

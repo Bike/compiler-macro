@@ -12,30 +12,30 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
   (:use #:cl #:introspect-environment)
   (:export #:policy #:policy-quality) ; reexport from backend
   (:export #:compiler-macro-redefinition-warning
-	   #:compiler-macro-redefinition-warning-name
-	   #:note-optimization-failure
-	   #:decline-expansion #:abort-expansion
-	   #:with-expansion-declination #:with-expansion-abortion
-	   #:optimization-note #:simple-optimization-note) ; condition
+           #:compiler-macro-redefinition-warning-name
+           #:note-optimization-failure
+           #:decline-expansion #:abort-expansion
+           #:with-expansion-declination #:with-expansion-abortion
+           #:optimization-note #:simple-optimization-note) ; condition
   (:export #:form-type #:form-typep
-	   #:form-typecase) ; form-type
+           #:form-typecase) ; form-type
   (:export #:find-inferrer #:define-inferrer) ; infer
   (:export #:define-compiler-hinter
-	   #:define-compiler-hint #:compiler-hint) ; hint
+           #:define-compiler-hint #:compiler-hint) ; hint
   (:export #:compiler-macroexpand #:compiler-macroexpand-1) ; expander
   (:export #:function-type-return-type #:values-type-primary
-	   #:function-type-primary-value #:array-type-element-type
-	   #:array-type-dimensions
-	   #:union-type-types #:intersection-type-types #:negation-type-type
-	   #:numeric-type-high #:numeric-type-low
-	   #:complex-type-element-type
-	   #:eql-type-object #:member-type-members
-	   #:satisfies-type-function
-	   #:cons-type-car-type #:cons-type-cdr-type) ; type-util
+           #:function-type-primary-value #:array-type-element-type
+           #:array-type-dimensions
+           #:union-type-types #:intersection-type-types #:negation-type-type
+           #:numeric-type-high #:numeric-type-low
+           #:complex-type-element-type
+           #:eql-type-object #:member-type-members
+           #:satisfies-type-function
+           #:cons-type-car-type #:cons-type-cdr-type) ; type-util
   (:export #:kind-of #:kindp #:kindcase #:ekindcase) ; kinds
   (:export #:cons-type #:array-type #:sequence-type ; kind specifiers (...)
-	   #:bottom-type #:subtype
-	   #:complex-type #:numeric-type #:condition-type
-	   #:intersection-type #:union-type #:member-type
-	   #:eql-type #:satisfies-type #:negation-type)
+           #:bottom-type #:subtype
+           #:complex-type #:numeric-type #:condition-type
+           #:intersection-type #:union-type #:member-type
+           #:eql-type #:satisfies-type #:negation-type)
   )

@@ -9,14 +9,14 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
 ||#
 
 ;;;; various conditions, especially relating to giving up on expansion
-;;;; (also with-expansion-declination etc.  this file may be more appropriately called "declination"...)
+;;;; (also with-expansion-declination etc.  this file may be more appropriately called "declination")
 
 (in-package #:sandalphon.compiler-macro)
 
 (define-condition optimization-note (style-warning) ()
   (:documentation "An optimization note signaled by a compiler expander of some sort.  Signaling this condition should indicate that some information (perhaps about how to improve efficiency by rearranging things to let the expander expand) should be presented to the programmer during compilation."))
 
-;; this is in alexandria, but.
+;; this is in alexandria
 (define-condition simple-style-warning (simple-warning style-warning) ()
   (:documentation "A STYLE-WARNING that is also a SIMPLE-WARNING.  Initargs :FORMAT-CONTROL and :FORMAT-ARGS, and the readers SIMPLE-CONDITION-FORMAT-CONTROL and SIMPLE-CONDITION-FORMAT-ARGUMENTS, are available."))
 
@@ -31,22 +31,22 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
   "As CHECK-TYPE, but TYPESPEC is evaluated."
   ;; ripped from SBCL's check-type, and sans a single solitary quote for the semantic.  bleh.
   (let ((value (gensym "VALUE"))
-	(_typespec (gensym "TYPESPEC"))
-	(_type-string (gensym "TYPE-STRING")))
+        (_typespec (gensym "TYPESPEC"))
+        (_type-string (gensym "TYPE-STRING")))
     `(do ((,value ,place ,place)
-	  (,_typespec ,typespec)
-	  (,_type-string ,type-string))
-	 ((typep ,value ,_typespec))
+          (,_typespec ,typespec)
+          (,_type-string ,type-string))
+         ((typep ,value ,_typespec))
        (setf ,place
-	     (restart-case
-		 (error 'simple-type-error
-			:datum ,value
-			:expected-type ,_typespec
-			:format-control "The value of ~S is ~S, which is not ~:[of type ~S~;~:*~A~]."
-			:format-arguments (list ',place ,value ,_type-string ,_typespec))
-	       (store-value (value)
-		 :report (lambda (stream) (format stream "Supply a new value for ~s." ',place))
-		 value))))))
+             (restart-case
+                 (error 'simple-type-error
+                        :datum ,value
+                        :expected-type ,_typespec
+                        :format-control "The value of ~S is ~S, which is not ~:[of type ~S~;~:*~A~]."
+                        :format-arguments (list ',place ,value ,_type-string ,_typespec))
+               (store-value (value)
+                 :report (lambda (stream) (format stream "Supply a new value for ~s." ',place))
+                 value))))))
 
 (defun coerce-to-condition (datum args default-type supertype)
   "This function implements the semantics of CL \"condition designators\".  It makes a condition, given a DATUM (which may be a symbol, format control, or condition), and ARGS (a list of arguments).  See CLHS 9.1.2.1 for more specifics.
@@ -58,16 +58,16 @@ DEFAULT-TYPE is the type of objects that should be constructed when DATUM is a f
     ;; (error '(foo ...) ...) is right out.
     (symbol
      (if (subtypep datum supertype)
-	 (apply #'make-condition datum args)
-	 (error "~s is not a subclass of ~s, and can't be used as one" datum supertype)))
+         (apply #'make-condition datum args)
+         (error "~s is not a subclass of ~s, and can't be used as one" datum supertype)))
     ;; functions are also format controls.
     ((or function string) (make-condition default-type :format-control datum :format-arguments args))
     (condition
      (check-type-eval datum supertype)
      (unless (null args)
        (cerror "Ignore the extra arguments."
-	       "Passed a condition to ~s, but passed arguments ~s as well."
-	       'coerce-to-condition args))
+               "Passed a condition to ~s, but passed arguments ~s as well."
+               'coerce-to-condition args))
      datum)))
 
 (defun decline-expansion (&optional (datum nil datum-p) &rest args)
@@ -97,7 +97,8 @@ This is intended for use in \"advanced\" utilities."
   "Within the dynamic extent of BODY, ABORT-EXPANSION will immediately return NIL from the WITH-EXPANSION-DECLINATION form.
 
 This is intended for use in \"advanced\" utilities."
-  ;; of course people could just make their own with note-optimization-failure and throw/block interleaving
+  ;; of course people could just make their own with note-optimization-failure
+  ;; and throw/block interleaving
   ;; (like i do with hints)
   ;; FIXME: This and its sister could probably use better names.
   ;; FIXME: And maybe some multiple value garbage to distinguish returning nil and aborting and blaaaaa

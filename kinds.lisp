@@ -23,29 +23,29 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
 (defun kind-of (type)
   "Return a kind designator appropriate for TYPE.  See KINDP for an explanation of kinds."
   (flet ((shared-name (name)
-	   (mapc (lambda (cons)
-		   (when (subtypep name (cdr cons))
-		     (return-from shared-name (car cons))))
-		 *kind-types*)
-	   (error "Nope")))
+           (mapc (lambda (cons)
+                   (when (subtypep name (cdr cons))
+                     (return-from shared-name (car cons))))
+                 *kind-types*)
+           (error "Nope")))
     (typecase type
       (cons (case (first type)
-	      ;; first pick off the ones that aren't legal as atomic specifiers.
-	      ((and) 'intersection-type)
-	      ((or) 'union-type)
-	      ((member) 'member-type)
-	      ((eql) 'eql-type) ; member-type?
-	      ((satisfies) 'satisfies-type)
-	      ((not) 'negation-type)
-	      ;; use the whole type instead of just the car for e.g. (mod *)
-	      (t (shared-name type))))
+              ;; first pick off the ones that aren't legal as atomic specifiers.
+              ((and) 'intersection-type)
+              ((or) 'union-type)
+              ((member) 'member-type)
+              ((eql) 'eql-type) ; member-type?
+              ((satisfies) 'satisfies-type)
+              ((not) 'negation-type)
+              ;; use the whole type instead of just the car for e.g. (mod *)
+              (t (shared-name type))))
       (symbol (or (shared-name type)
-		  (let ((class (find-class type nil)))
-		    ;; find-class works on defclass-defined and defstruct-defined classes.
-		    ;; not necessarily conditions, which is why we handle it in shared-name.
-		    (if class
-			(class-of class)
-			(error "bluh bluh")))))
+                  (let ((class (find-class type nil)))
+                    ;; find-class works on defclass-defined and defstruct-defined classes.
+                    ;; not necessarily conditions, which is why we handle it in shared-name.
+                    (if class
+                        (class-of class)
+                        (error "bluh bluh")))))
       (class (class-of type)))))
 
 (defun kindp (type kind &optional environment)
@@ -66,43 +66,43 @@ Other kinds are already integrated with CLOS.  E.g., STRUCTURE-CLASS (the name, 
 
 Compound kind designators are available.  EQL, OR, AND, and NOT are analogous to the same operators of types.  SUBTYPE can be used to designate the kind of all subtypes of a given type; that is, (kindp [t1] '(subtype [t2])) is the same as (subtypep [t1] [t2])."
   (flet ((subtypecheck (type)
-	   (let ((assoc (assoc kind *kind-types*)))
-	     (if assoc
-		 (subtypep type (cdr assoc) environment)
-		 (if (member kind '(intersection-type union-type
-				    member-type eql-type
-				    satisfies-type negation-type))
-		     nil
-		     (error "unknown kind ~s" kind))))))
+           (let ((assoc (assoc kind *kind-types*)))
+             (if assoc
+                 (subtypep type (cdr assoc) environment)
+                 (if (member kind '(intersection-type union-type
+                                    member-type eql-type
+                                    satisfies-type negation-type))
+                     nil
+                     (error "unknown kind ~s" kind))))))
     (let ((type (typexpand type environment)))
       (cond ((consp kind)
-	     (ecase (first kind)
-	       ((eql) (eql (second kind) type))
-	       ((subtype) (subtypep type (second kind) environment))
-	       ((or)
-		;; force a boolean
-		(if (some (lambda (kind) (kindp type kind environment)) (rest kind))
-		    t
-		    nil))
-	       ((and) (every (lambda (kind) (kindp type kind environment)) (rest kind)))
-	       ((not) (not (kindp type (second kind) environment)))))
-	    ((consp type)
-	     (case (first type)
-	       ;; types to pick off specifically
-	       ((and) (eql kind 'intersection-type))
-	       ((or) (eql kind 'union-type))
-	       ((member) (eql kind 'member-type))
-	       ((eql) (eql kind 'eql-type)) ; member-type?
-	       ((satisfies) (eql kind 'satisfies-type))
-	       ((not) (eql kind 'negation-type))
-	       (t (subtypecheck (first type)))))
-	    ((symbolp kind)
-	     (let ((class (find-class kind nil environment))) ; kind may be, e.g., BUILT-IN-CLASS
-	       (if class
-		   (typep type class)
-		   (subtypecheck type))))
-	    ((typep kind 'class) (typep type kind))
-	    (t (error "~s is not a kind designator" kind))))))
+             (ecase (first kind)
+               ((eql) (eql (second kind) type))
+               ((subtype) (subtypep type (second kind) environment))
+               ((or)
+                ;; force a boolean
+                (if (some (lambda (kind) (kindp type kind environment)) (rest kind))
+                    t
+                    nil))
+               ((and) (every (lambda (kind) (kindp type kind environment)) (rest kind)))
+               ((not) (not (kindp type (second kind) environment)))))
+            ((consp type)
+             (case (first type)
+               ;; types to pick off specifically
+               ((and) (eql kind 'intersection-type))
+               ((or) (eql kind 'union-type))
+               ((member) (eql kind 'member-type))
+               ((eql) (eql kind 'eql-type)) ; member-type?
+               ((satisfies) (eql kind 'satisfies-type))
+               ((not) (eql kind 'negation-type))
+               (t (subtypecheck (first type)))))
+            ((symbolp kind)
+             (let ((class (find-class kind nil environment))) ; kind may be, e.g., BUILT-IN-CLASS
+               (if class
+                   (typep type class)
+                   (subtypecheck type))))
+            ((typep kind 'class) (typep type kind))
+            (t (error "~s is not a kind designator" kind))))))
 
 ;;; TODO: ckindcase and/or make this all suck less
 

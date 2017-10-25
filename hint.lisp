@@ -24,11 +24,11 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
   (lambda (form env)
     (block done
       (with-expansion-abortion
-	(dolist (entry (gethash name *compiler-hints*))
-	  (with-expansion-declination
-	    (let ((new (funcall (cdr entry) form env)))
-	      (unless (eql form new) ; handle old-style compiler macro declination semantics
-		(return-from done new))))))
+        (dolist (entry (gethash name *compiler-hints*))
+          (with-expansion-declination
+            (let ((new (funcall (cdr entry) form env)))
+              (unless (eql form new) ; handle old-style compiler macro declination semantics
+                (return-from done new))))))
       ;; we aborted or didn't find an expansion, so
       form)))
 
@@ -38,17 +38,17 @@ see <http://creativecommons.org/publicdomain/zero/1.0/>.
 Supported options: :documentation"
   (declare (ignore lambda-list))
   (let* ((doc-p (assoc :documentation options))
-	 (doc (second doc-p)))
+         (doc (second doc-p)))
     ;; more options later, e.g. "method combinations"
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (when (compiler-macro-function ',name)
-	 (warn 'compiler-macro-redefinition-warning
-	       :name ',name))
+         (warn 'compiler-macro-redefinition-warning
+               :name ',name))
        (setf (gethash ',name *compiler-hints*) nil)
        (setf (compiler-macro-function ',name)
-	     (compiler-hinter-lambda ',name))
+             (compiler-hinter-lambda ',name))
        ,@(when doc-p
-	       (list `(setf (documentation ',name 'compiler-macro) ',doc)))
+               (list `(setf (documentation ',name 'compiler-macro) ',doc)))
        ',name)))
 
 (defmacro define-compiler-hint (name lambda-list qual &body body &environment env)
@@ -65,10 +65,10 @@ Hint functions can call DECLINE-EXPANSION in order to decline to expand immediat
      ;; ew, double hash lookup
      (let ((existing? (compiler-hint ',name ',qual)))
        (when existing?
-	 (warn 'compiler-macro-redefinition-warning :name ',name)))
+         (warn 'compiler-macro-redefinition-warning :name ',name)))
      ;; TODO: set doc to qual? (or use the documentation from the function itself)
      (setf (compiler-hint ',name ',qual)
-	   ,(parse-compiler-macro name lambda-list body env))))
+           ,(parse-compiler-macro name lambda-list body env))))
 
 (defun compiler-hint (name qual)
   "Retrieve the hint function for NAME, identified by QUAL compared via CL:EQUAL.
@@ -84,10 +84,10 @@ A hint function is a function of two arguments, a form and an environment, and w
   ;; (setf (alexandria:assoc-value (gethash name *compiler-hints*) name :test #'equal) new-value)
   (let ((alist (gethash name *compiler-hints*)))
     (if alist
-	(let ((assoc (assoc qual alist :test #'equal)))
-	  (if assoc
-	      (setf (cdr assoc) new-value)
-	      (push (cons qual new-value) (gethash name *compiler-hints*))))
-	(setf (gethash name *compiler-hints*)
-	      (list (cons qual new-value)))))
+        (let ((assoc (assoc qual alist :test #'equal)))
+          (if assoc
+              (setf (cdr assoc) new-value)
+              (push (cons qual new-value) (gethash name *compiler-hints*))))
+        (setf (gethash name *compiler-hints*)
+              (list (cons qual new-value)))))
   new-value)
