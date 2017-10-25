@@ -1,9 +1,17 @@
 ;;;; compiler-macro.asd
+#||
+To the extent possible under law, the author(s) have dedicated all copyright and related and
+neighboring rights to this software to the public domain worldwide. This software is distributed
+without any warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication along with this software. If not,
+see <http://creativecommons.org/publicdomain/zero/1.0/>. 
+||#
 
 (asdf:defsystem #:compiler-macro
   :description "Utilities for writing compiler macros."
   :author "Bike <aeshtaer@gmail.com>"
-  :license "WTFPL"
+  :license "CC0"
   :version "0.1"
   :depends-on (#:introspect-environment)
   :components ((:file "package")
